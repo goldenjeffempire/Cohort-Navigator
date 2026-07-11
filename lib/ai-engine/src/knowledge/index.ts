@@ -8,6 +8,7 @@
 import { db, aiKnowledgeChunksTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
+import { embed } from "./embeddings.js";
 
 export type KnowledgeSourceType = "lesson" | "course" | "documentation" | "challenge" | "faq" | "manual";
 
@@ -82,6 +83,7 @@ export async function indexDocument(doc: KnowledgeDocument): Promise<number> {
       title: `${doc.title}${chunks.length > 1 ? ` (${i + 1}/${chunks.length})` : ""}`,
       content: chunk,
       tfidfVector: buildTfIdf(chunk),
+      embedding: embed(chunk),
       tags: doc.tags,
       language: doc.language,
       chunkIndex: i,

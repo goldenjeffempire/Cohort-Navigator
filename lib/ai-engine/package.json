@@ -7,8 +7,10 @@
     ".": "./src/index.ts",
     "./inference": "./src/inference/index.ts",
     "./knowledge": "./src/knowledge/index.ts",
+    "./knowledge/embeddings": "./src/knowledge/embeddings.ts",
     "./prompts": "./src/prompts/index.ts",
-    "./analysis": "./src/analysis/index.ts"
+    "./analysis": "./src/analysis/index.ts",
+    "./evaluation": "./src/evaluation/index.ts"
   },
   "dependencies": {
     "@workspace/db": "workspace:*",

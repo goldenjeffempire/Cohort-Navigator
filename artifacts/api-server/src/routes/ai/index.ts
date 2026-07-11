@@ -4,8 +4,12 @@ import codeRouter from "./code.js";
 import toolsRouter from "./tools.js";
 import knowledgeRouter from "./knowledge.js";
 import adminRouter from "./admin.js";
+import { aiRateLimit } from "../../middlewares/aiRateLimit.js";
 
 const router = Router();
+// Applies to all /ai/* routes except admin (admins are exempt — they need
+// unthrottled access to manage models/prompts and run eval suites).
+router.use(/^\/ai\/(?!admin)/, aiRateLimit());
 router.use(chatRouter);
 router.use(codeRouter);
 router.use(toolsRouter);

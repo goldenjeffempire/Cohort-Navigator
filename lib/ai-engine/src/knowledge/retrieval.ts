@@ -9,6 +9,7 @@
 
 import { db, aiKnowledgeChunksTable } from "@workspace/db";
 import { like, or, sql } from "drizzle-orm";
+import { embed, cosineSimilarity } from "./embeddings.js";
 
 // ─── BM25 text search ─────────────────────────────────────────────────────────
 
@@ -38,30 +39,71 @@ function bm25Score(doc: string, query: string[], k1 = 1.5, b = 0.75): number {
   return score;
 }
 
-export async function searchKnowledge(query: string, limit = 5): Promise<Array<{ id: number; title: string; content: string; score: number }>> {
+/**
+ * Hybrid retrieval: BM25 lexical score (exact/partial term matches) combined
+ * with cosine similarity over self-hosted local embeddings (semantic /
+ * fuzzy match — catches paraphrases and synonyms that share no exact terms).
+ * Both signals are self-hosted; no external embedding or search API is used.
+ */
+export async function searchKnowledge(query: string, limit = 5): Promise<Array<{ id: number; title: string; content: string; score: number; lexicalScore: number; semanticScore: number }>> {
   const terms = tokenize(query);
   if (terms.length === 0) return [];
 
-  // Fetch candidate chunks that contain any query term (Postgres ILIKE)
+  const queryEmbedding = embed(query);
+
+  // Fetch candidate chunks that contain any query term (Postgres ILIKE) —
+  // this is the lexical recall stage before re-ranking.
   const conditions = terms.slice(0, 5).map((t) =>
     or(like(aiKnowledgeChunksTable.content, `%${t}%`), like(aiKnowledgeChunksTable.title, `%${t}%`)),
   );
 
-  const candidates = await db
+  const lexicalCandidates = await db
     .select({
       id: aiKnowledgeChunksTable.id,
       title: aiKnowledgeChunksTable.title,
       content: aiKnowledgeChunksTable.content,
+      embedding: aiKnowledgeChunksTable.embedding,
     })
     .from(aiKnowledgeChunksTable)
     .where(or(...conditions))
     .limit(50);
 
-  // Re-rank with BM25
-  const scored = candidates.map((c) => ({
-    ...c,
-    score: bm25Score(c.content + " " + c.title, terms),
-  }));
+  // Semantic recall stage — catches chunks with zero exact term overlap but
+  // high embedding similarity (e.g. "loop forever" vs "infinite iteration").
+  // Bounded scan since the knowledge base is course-content scale, not web-scale.
+  const allChunks = await db
+    .select({
+      id: aiKnowledgeChunksTable.id,
+      title: aiKnowledgeChunksTable.title,
+      content: aiKnowledgeChunksTable.content,
+      embedding: aiKnowledgeChunksTable.embedding,
+    })
+    .from(aiKnowledgeChunksTable)
+    .limit(500);
+
+  const byId = new Map<number, (typeof allChunks)[number]>();
+  for (const c of lexicalCandidates) byId.set(c.id, c);
+
+  const semanticRanked = allChunks
+    .map((c) => ({ c, sim: c.embedding ? cosineSimilarity(queryEmbedding, c.embedding as number[]) : 0 }))
+    .sort((a, b) => b.sim - a.sim)
+    .slice(0, 20);
+  for (const { c } of semanticRanked) byId.set(c.id, c);
+
+  const scored = Array.from(byId.values()).map((c) => {
+    const lexicalScore = bm25Score(c.content + " " + c.title, terms);
+    const semanticScore = c.embedding ? cosineSimilarity(queryEmbedding, c.embedding as number[]) : 0;
+    // Normalise BM25 (unbounded) into a comparable 0-1-ish range before blending.
+    const normalizedLexical = lexicalScore / (lexicalScore + 5);
+    return {
+      id: c.id,
+      title: c.title,
+      content: c.content,
+      lexicalScore,
+      semanticScore,
+      score: 0.65 * normalizedLexical + 0.35 * Math.max(0, semanticScore),
+    };
+  });
 
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, limit);

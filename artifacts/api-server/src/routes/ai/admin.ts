@@ -29,8 +29,10 @@ import {
   aiFeedbackTable,
   aiConversationsTable,
   aiMessagesTable,
+  aiModelEvaluationsTable,
 } from "@workspace/db";
 import { inferenceEngine } from "@workspace/ai-engine/inference";
+import { runEvalSuite } from "@workspace/ai-engine/evaluation";
 import { requireAuth, requireRole } from "../../middlewares/auth.js";
 
 const router = Router();
@@ -92,6 +94,46 @@ router.post("/ai/admin/models/:id/activate", ...adminOnly, async (req, res): Pro
   const [model] = await db.update(aiModelsTable).set({ isDefault: true, status: "active" }).where(eq(aiModelsTable.id, id)).returning();
   if (!model) { res.status(404).json({ error: "Not found" }); return; }
   res.json(model);
+});
+
+// ─── MLOps: evaluation suite (continuous-evaluation gate) ────────────────────
+//
+// Runs the fixed evaluation prompt suite against whichever engine is
+// currently active (self-hosted local model via AI_MODEL_ENDPOINT, or the
+// built-in RAG fallback) and stores the result against the model registry
+// entry so quality/latency can be compared across model swaps and prompt
+// template changes before promoting a model to default.
+
+router.post("/ai/admin/models/:id/evaluate", ...adminOnly, async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id);
+  const [model] = await db.select().from(aiModelsTable).where(eq(aiModelsTable.id, id));
+  if (!model) { res.status(404).json({ error: "Not found" }); return; }
+
+  const result = await runEvalSuite(inferenceEngine);
+
+  const [saved] = await db.insert(aiModelEvaluationsTable).values({
+    modelId: model.id,
+    modelVersion: model.version,
+    suiteName: result.suiteName,
+    casesRun: result.casesRun,
+    casesPassed: result.casesPassed,
+    avgLatencyMs: result.avgLatencyMs,
+    avgOutputTokens: result.avgOutputTokens,
+    score: result.score,
+    details: result.details,
+    triggeredBy: req.user!.id,
+  }).returning();
+
+  res.status(201).json(saved);
+});
+
+router.get("/ai/admin/models/:id/evaluations", ...adminOnly, async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id);
+  const evals = await db.select().from(aiModelEvaluationsTable)
+    .where(eq(aiModelEvaluationsTable.modelId, id))
+    .orderBy(desc(aiModelEvaluationsTable.createdAt))
+    .limit(20);
+  res.json(evals);
 });
 
 // ─── Prompt templates ─────────────────────────────────────────────────────────

@@ -120,6 +120,10 @@ export const aiKnowledgeChunksTable = pgTable("ai_knowledge_chunks", {
   content:     text("content").notNull(),
   // TF-IDF representation stored as serialised JSON (term -> weight)
   tfidfVector: jsonb("tfidf_vector").$type<Record<string, number>>(),
+  // Dense local embedding (self-hosted feature-hashing vector, see
+  // lib/ai-engine/src/knowledge/embeddings.ts) used for semantic / vector
+  // search, combined with BM25 for hybrid retrieval.
+  embedding:   jsonb("embedding").$type<number[]>(),
   // Metadata for filtering
   tags:        text("tags"),                     // comma-separated
   language:    text("language"),                 // programming language if code chunk
@@ -149,9 +153,34 @@ export const aiModelsTable = pgTable("ai_models", {
   maxTokens:    integer("max_tokens").notNull().default(2048),
   status:       aiModelStatusEnum("status").notNull().default("active"),
   isDefault:    boolean("is_default").notNull().default(false),
+  // MLOps: bumped whenever the model's weights/config are swapped so eval
+  // history (ai_model_evaluations) can be compared across versions.
+  version:      integer("version").notNull().default(1),
   config:       jsonb("config").$type<Record<string, unknown>>(),
   createdAt:    timestamp("created_at").notNull().defaultNow(),
   updatedAt:    timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ─── Model Evaluations (MLOps) ─────────────────────────────────────────────────
+//
+// Stores the results of running the fixed evaluation suite
+// (lib/ai-engine/src/evaluation/index.ts) against a specific model/version.
+// Lets admins compare quality/latency across model swaps before promoting a
+// new model to default (a lightweight continuous-evaluation gate).
+
+export const aiModelEvaluationsTable = pgTable("ai_model_evaluations", {
+  id:            serial("id").primaryKey(),
+  modelId:       integer("model_id").references(() => aiModelsTable.id, { onDelete: "cascade" }),
+  modelVersion:  integer("model_version").notNull().default(1),
+  suiteName:     text("suite_name").notNull().default("default"),
+  casesRun:      integer("cases_run").notNull(),
+  casesPassed:   integer("cases_passed").notNull(),
+  avgLatencyMs:  real("avg_latency_ms").notNull(),
+  avgOutputTokens: real("avg_output_tokens").notNull(),
+  score:         real("score").notNull(),          // 0-100 composite
+  details:       jsonb("details").$type<Array<{ name: string; passed: boolean; latencyMs: number; note?: string }>>(),
+  triggeredBy:   integer("triggered_by").references(() => usersTable.id),
+  createdAt:     timestamp("created_at").notNull().defaultNow(),
 });
 
 // ─── Prompt Templates ─────────────────────────────────────────────────────────
