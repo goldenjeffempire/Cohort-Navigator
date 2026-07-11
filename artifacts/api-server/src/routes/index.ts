@@ -19,6 +19,7 @@ import codingRouter from "./coding";
 import plagiarismRouter from "./plagiarism";
 // Phase 4 — native AI platform
 import aiRouter from "./ai/index";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use(codingRouter);
 router.use(plagiarismRouter);
 // Phase 4
 router.use(aiRouter);
+router.use(storageRouter);
 
 export default router;

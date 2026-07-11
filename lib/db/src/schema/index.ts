@@ -9,3 +9,12 @@ export * from "./notifications";
 export * from "./scholarships";
 export * from "./coding";
 export * from "./ai";
+// Phase 5 — collaboration, mentorship & community ecosystem
+export * from "./community";
+export * from "./discussions";
+export * from "./messaging";
+export * from "./teams";
+export * from "./mentorship";
+export * from "./live_learning";
+export * from "./moderation";
+export * from "./community_integrations";
