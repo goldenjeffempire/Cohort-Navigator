@@ -17,6 +17,8 @@ import challengesRouter from "./challenges";
 import submissionsRouter from "./submissions";
 import codingRouter from "./coding";
 import plagiarismRouter from "./plagiarism";
+// Phase 4 — native AI platform
+import aiRouter from "./ai/index";
 
 const router: IRouter = Router();
 
@@ -38,5 +40,7 @@ router.use(challengesRouter);
 router.use(submissionsRouter);
 router.use(codingRouter);
 router.use(plagiarismRouter);
+// Phase 4
+router.use(aiRouter);
 
 export default router;

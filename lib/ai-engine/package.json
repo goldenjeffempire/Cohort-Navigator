@@ -1,0 +1,21 @@
+{
+  "name": "@workspace/ai-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./inference": "./src/inference/index.ts",
+    "./knowledge": "./src/knowledge/index.ts",
+    "./prompts": "./src/prompts/index.ts",
+    "./analysis": "./src/analysis/index.ts"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:"
+  }
+}
