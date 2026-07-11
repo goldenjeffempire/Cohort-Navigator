@@ -1,17 +1,60 @@
-import { useListAssignments, useGetMe } from "@workspace/api-client-react";
+import { useState } from "react";
+import { useListAssignments, useGetMe, useCreateAssignment, useListCourses } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClipboardList, Calendar, ChevronRight, CheckCircle, Clock } from "lucide-react";
+import { ClipboardList, Calendar, ChevronRight, CheckCircle, Plus } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Assignments() {
-  const { data: assignments, isLoading } = useListAssignments();
+  const { data: assignments, isLoading, refetch } = useListAssignments();
   const { data: me } = useGetMe();
+  const { data: courses } = useListCourses();
+  const createMutation = useCreateAssignment();
+  const { toast } = useToast();
 
   const isStaff = me?.role === 'admin' || me?.role === 'mentor';
+
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    courseId: "", title: "", description: "", dueDate: "", maxScore: "100",
+  });
+  const set = (f: string, v: string) => setForm(prev => ({ ...prev, [f]: v }));
+
+  const handleCreate = () => {
+    if (!form.courseId || !form.title.trim()) {
+      toast({ title: "Course and title are required.", variant: "destructive" }); return;
+    }
+    createMutation.mutate({
+      data: {
+        courseId: Number(form.courseId),
+        title: form.title.trim(),
+        description: form.description.trim() || undefined,
+        dueDate: form.dueDate || undefined,
+        maxScore: form.maxScore ? Number(form.maxScore) : 100,
+      }
+    }, {
+      onSuccess: () => {
+        toast({ title: "Assignment created!" });
+        setOpen(false);
+        setForm({ courseId: "", title: "", description: "", dueDate: "", maxScore: "100" });
+        refetch();
+      },
+      onError: () => toast({ title: "Failed to create assignment", variant: "destructive" }),
+    });
+  };
 
   const getStatusBadge = (status?: string | null) => {
     if (!status) return <Badge variant="outline" className="text-gray-500">Not Submitted</Badge>;
@@ -44,9 +87,59 @@ export default function Assignments() {
           <p className="text-gray-500 mt-1">Review prompts and submit your work.</p>
         </div>
         {isStaff && (
-          <Button>Create Assignment</Button>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Create Assignment
+          </Button>
         )}
       </div>
+
+      {/* Create Assignment Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create Assignment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Course *</Label>
+              <Select value={form.courseId} onValueChange={v => set("courseId", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a course..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses?.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Title *</Label>
+              <Input placeholder="e.g. Build a REST API with Express" value={form.title} onChange={e => set("title", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea rows={4} placeholder="Describe what students need to do..." value={form.description} onChange={e => set("description", e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Due Date</Label>
+                <Input type="date" value={form.dueDate} onChange={e => set("dueDate", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Max Score</Label>
+                <Input type="number" value={form.maxScore} onChange={e => set("maxScore", e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Creating..." : "Create Assignment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {isLoading ? (
         <div className="space-y-4">
@@ -92,8 +185,13 @@ export default function Assignments() {
           <ClipboardList className="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments</h3>
           <p className="text-gray-500 max-w-md mx-auto">
-            You have no pending or past assignments.
+            {isStaff ? 'Create the first assignment to get started.' : 'You have no pending or past assignments.'}
           </p>
+          {isStaff && (
+            <Button className="mt-4" onClick={() => setOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Create Assignment
+            </Button>
+          )}
         </div>
       )}
     </div>

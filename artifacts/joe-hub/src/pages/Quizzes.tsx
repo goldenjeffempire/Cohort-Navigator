@@ -1,14 +1,57 @@
-import { useListQuizzes, useGetMe } from "@workspace/api-client-react";
+import { useState } from "react";
+import { useListQuizzes, useGetMe, useCreateQuiz, useListCourses } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Clock, FileQuestion, ChevronRight } from "lucide-react";
+import { AlertCircle, Clock, FileQuestion, ChevronRight, Plus } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Quizzes() {
-  const { data: quizzes, isLoading } = useListQuizzes();
+  const { data: quizzes, isLoading, refetch } = useListQuizzes();
   const { data: me } = useGetMe();
+  const { data: courses } = useListCourses();
+  const createMutation = useCreateQuiz();
+  const { toast } = useToast();
+
   const isStaff = me?.role === 'admin' || me?.role === 'mentor';
+
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    courseId: "", title: "", description: "", timeLimitMinutes: "",
+  });
+  const set = (f: string, v: string) => setForm(prev => ({ ...prev, [f]: v }));
+
+  const handleCreate = () => {
+    if (!form.courseId || !form.title.trim()) {
+      toast({ title: "Course and title are required.", variant: "destructive" }); return;
+    }
+    createMutation.mutate({
+      data: {
+        courseId: Number(form.courseId),
+        title: form.title.trim(),
+        description: form.description.trim() || undefined,
+        timeLimitMinutes: form.timeLimitMinutes ? Number(form.timeLimitMinutes) : undefined,
+      }
+    }, {
+      onSuccess: (quiz) => {
+        toast({ title: "Quiz created! Add questions to it now." });
+        setOpen(false);
+        setForm({ courseId: "", title: "", description: "", timeLimitMinutes: "" });
+        refetch();
+      },
+      onError: () => toast({ title: "Failed to create quiz", variant: "destructive" }),
+    });
+  };
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto">
@@ -18,9 +61,53 @@ export default function Quizzes() {
           <p className="text-gray-500 mt-1">Test your knowledge and earn points.</p>
         </div>
         {isStaff && (
-          <Button>Create Quiz</Button>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Create Quiz
+          </Button>
         )}
       </div>
+
+      {/* Create Quiz Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create Quiz</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Course *</Label>
+              <Select value={form.courseId} onValueChange={v => set("courseId", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a course..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses?.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Quiz Title *</Label>
+              <Input placeholder="e.g. JavaScript Fundamentals Quiz" value={form.title} onChange={e => set("title", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea rows={3} placeholder="Brief overview of what's covered..." value={form.description} onChange={e => set("description", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Time Limit (minutes)</Label>
+              <Input type="number" placeholder="Leave blank for no limit" value={form.timeLimitMinutes} onChange={e => set("timeLimitMinutes", e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Creating..." : "Create Quiz"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -66,8 +153,13 @@ export default function Quizzes() {
           <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No quizzes available</h3>
           <p className="text-gray-500 max-w-md mx-auto">
-            Check back later for knowledge checks.
+            {isStaff ? 'Create the first quiz to start testing students.' : 'Check back later for knowledge checks.'}
           </p>
+          {isStaff && (
+            <Button className="mt-4" onClick={() => setOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Create Quiz
+            </Button>
+          )}
         </div>
       )}
     </div>

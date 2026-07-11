@@ -1,15 +1,61 @@
-import { useListCohorts, useGetMe } from "@workspace/api-client-react";
+import { useState } from "react";
+import { useListCohorts, useGetMe, useCreateCohort } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Users, Calendar, ChevronRight, GraduationCap } from "lucide-react";
+import { Users, Calendar, ChevronRight, GraduationCap, Plus } from "lucide-react";
 import { format } from "date-fns";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Cohorts() {
-  const { data: cohorts, isLoading } = useListCohorts();
+  const { data: cohorts, isLoading, refetch } = useListCohorts();
   const { data: me } = useGetMe();
+  const createMutation = useCreateCohort();
+  const { toast } = useToast();
+
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: "", description: "", startDate: "", endDate: "",
+    status: "upcoming" as "upcoming" | "active" | "completed",
+    capacity: "",
+  });
+
+  const set = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleCreate = () => {
+    if (!form.name.trim() || !form.startDate) {
+      toast({ title: "Name and Start Date are required.", variant: "destructive" }); return;
+    }
+    createMutation.mutate({
+      data: {
+        name: form.name.trim(),
+        description: form.description.trim() || undefined,
+        startDate: form.startDate,
+        endDate: form.endDate || undefined,
+        status: form.status,
+        capacity: form.capacity ? Number(form.capacity) : undefined,
+      }
+    }, {
+      onSuccess: () => {
+        toast({ title: "Cohort created!" });
+        setOpen(false);
+        setForm({ name: "", description: "", startDate: "", endDate: "", status: "upcoming", capacity: "" });
+        refetch();
+      },
+      onError: () => toast({ title: "Failed to create cohort", variant: "destructive" }),
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -28,9 +74,63 @@ export default function Cohorts() {
           <p className="text-gray-500 mt-1">Join a community of learners moving together.</p>
         </div>
         {me?.role === 'admin' && (
-          <Button>Create Cohort</Button>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Create Cohort
+          </Button>
         )}
       </div>
+
+      {/* Create Cohort Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create New Cohort</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="c-name">Cohort Name *</Label>
+              <Input id="c-name" placeholder="e.g. JOE Hub Cohort 2026-C" value={form.name} onChange={e => set("name", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-desc">Description</Label>
+              <Textarea id="c-desc" placeholder="Brief description of this cohort..." rows={3} value={form.description} onChange={e => set("description", e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="c-start">Start Date *</Label>
+                <Input id="c-start" type="date" value={form.startDate} onChange={e => set("startDate", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="c-end">End Date</Label>
+                <Input id="c-end" type="date" value={form.endDate} onChange={e => set("endDate", e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="c-status">Status</Label>
+                <Select value={form.status} onValueChange={v => set("status", v)}>
+                  <SelectTrigger id="c-status"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="c-cap">Capacity</Label>
+                <Input id="c-cap" type="number" placeholder="e.g. 50" value={form.capacity} onChange={e => set("capacity", e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Creating..." : "Create Cohort"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

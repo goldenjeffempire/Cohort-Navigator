@@ -1,25 +1,155 @@
+import { useState } from "react";
 import { useParams, Link } from "wouter";
-import { useGetCohort, useListCohortEnrollments, useListCohortMentors, useListCohortCourses, useGetMe } from "@workspace/api-client-react";
+import {
+  useGetCohort, useListCohortEnrollments, useListCohortMentors, useListCohortCourses,
+  useGetMe, useUpdateCohort, useEnrollStudent, useAssignMentor, useAddCohortCourse,
+  useListUsers, useListCourses, useRemoveEnrollment, useUnassignMentor,
+} from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Users, BookOpen, GraduationCap, Calendar } from "lucide-react";
+import { ChevronLeft, Users, BookOpen, GraduationCap, Calendar, UserPlus, Trash2, Plus } from "lucide-react";
 import { format } from "date-fns";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CohortDetail() {
   const params = useParams();
   const cohortId = Number(params.id);
   const { data: me } = useGetMe();
-  
-  const { data: cohort, isLoading: isLoadingCohort } = useGetCohort(cohortId);
-  const { data: enrollments, isLoading: isLoadingEnrollments } = useListCohortEnrollments(cohortId);
-  const { data: mentors, isLoading: isLoadingMentors } = useListCohortMentors(cohortId);
-  const { data: courses, isLoading: isLoadingCourses } = useListCohortCourses(cohortId);
+  const { toast } = useToast();
 
+  const { data: cohort, isLoading: isLoadingCohort, refetch: refetchCohort } = useGetCohort(cohortId);
+  const { data: enrollments, isLoading: isLoadingEnrollments, refetch: refetchEnrollments } = useListCohortEnrollments(cohortId);
+  const { data: mentors, isLoading: isLoadingMentors, refetch: refetchMentors } = useListCohortMentors(cohortId);
+  const { data: courses, isLoading: isLoadingCourses, refetch: refetchCourses } = useListCohortCourses(cohortId);
+  const { data: allUsers } = useListUsers();
+  const { data: allCourses } = useListCourses();
+
+  const updateMutation = useUpdateCohort();
+  const enrollMutation = useEnrollStudent();
+  const assignMentorMutation = useAssignMentor();
+  const addCourseMutation = useAddCohortCourse();
+  const removeEnrollmentMutation = useRemoveEnrollment();
+  const unassignMentorMutation = useUnassignMentor();
+
+  const isAdmin = me?.role === 'admin';
   const isStaff = me?.role === 'admin' || me?.role === 'mentor';
+
+  // Edit cohort dialog
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", description: "", startDate: "", endDate: "", status: "upcoming" as string, capacity: "" });
+  const setEdit = (f: string, v: string) => setEditForm(prev => ({ ...prev, [f]: v }));
+
+  const openEdit = () => {
+    if (!cohort) return;
+    setEditForm({
+      name: cohort.name,
+      description: cohort.description || "",
+      startDate: cohort.startDate,
+      endDate: cohort.endDate || "",
+      status: cohort.status,
+      capacity: cohort.capacity ? String(cohort.capacity) : "",
+    });
+    setEditOpen(true);
+  };
+
+  const handleEdit = () => {
+    if (!editForm.name.trim()) { toast({ title: "Name is required", variant: "destructive" }); return; }
+    updateMutation.mutate({
+      id: cohortId,
+      data: {
+        name: editForm.name.trim(),
+        description: editForm.description.trim() || undefined,
+        startDate: editForm.startDate || undefined,
+        endDate: editForm.endDate || undefined,
+        status: editForm.status as "upcoming" | "active" | "completed",
+        capacity: editForm.capacity ? Number(editForm.capacity) : undefined,
+      }
+    }, {
+      onSuccess: () => { toast({ title: "Cohort updated!" }); setEditOpen(false); refetchCohort(); },
+      onError: () => toast({ title: "Failed to update", variant: "destructive" }),
+    });
+  };
+
+  // Enroll student dialog
+  const [enrollOpen, setEnrollOpen] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const enrolledStudentIds = new Set(enrollments?.map(e => e.studentId));
+  const availableStudents = allUsers?.filter(u => u.role === 'student' && !enrolledStudentIds.has(u.id)) || [];
+
+  const handleEnroll = () => {
+    if (!selectedStudentId) { toast({ title: "Select a student", variant: "destructive" }); return; }
+    enrollMutation.mutate({
+      id: cohortId,
+      data: { studentId: Number(selectedStudentId) }
+    }, {
+      onSuccess: () => { toast({ title: "Student enrolled!" }); setEnrollOpen(false); setSelectedStudentId(""); refetchEnrollments(); },
+      onError: () => toast({ title: "Failed to enroll student", variant: "destructive" }),
+    });
+  };
+
+  // Assign mentor dialog
+  const [mentorOpen, setMentorOpen] = useState(false);
+  const [selectedMentorId, setSelectedMentorId] = useState<string>("");
+  const assignedMentorIds = new Set(mentors?.map(m => m.mentorId));
+  const availableMentors = allUsers?.filter(u => u.role === 'mentor' && !assignedMentorIds.has(u.id)) || [];
+
+  const handleAssignMentor = () => {
+    if (!selectedMentorId) { toast({ title: "Select a mentor", variant: "destructive" }); return; }
+    assignMentorMutation.mutate({
+      id: cohortId,
+      data: { mentorId: Number(selectedMentorId) }
+    }, {
+      onSuccess: () => { toast({ title: "Mentor assigned!" }); setMentorOpen(false); setSelectedMentorId(""); refetchMentors(); },
+      onError: () => toast({ title: "Failed to assign mentor", variant: "destructive" }),
+    });
+  };
+
+  // Add course dialog
+  const [courseOpen, setCourseOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+  const [courseOrder, setCourseOrder] = useState<string>("");
+  const cohortCourseIds = new Set(courses?.map(c => c.courseId));
+  const availableCourses = allCourses?.filter(c => !cohortCourseIds.has(c.id)) || [];
+
+  const handleAddCourse = () => {
+    if (!selectedCourseId) { toast({ title: "Select a course", variant: "destructive" }); return; }
+    addCourseMutation.mutate({
+      id: cohortId,
+      data: { courseId: Number(selectedCourseId), order: courseOrder ? Number(courseOrder) : (courses?.length || 0) }
+    }, {
+      onSuccess: () => { toast({ title: "Course added to learning path!" }); setCourseOpen(false); setSelectedCourseId(""); setCourseOrder(""); refetchCourses(); },
+      onError: () => toast({ title: "Failed to add course", variant: "destructive" }),
+    });
+  };
+
+  const handleRemoveEnrollment = (enrollmentId: number) => {
+    if (!confirm("Remove this student from the cohort?")) return;
+    removeEnrollmentMutation.mutate({ id: cohortId, studentId: enrollmentId }, {
+      onSuccess: () => { toast({ title: "Student removed" }); refetchEnrollments(); },
+      onError: () => toast({ title: "Failed to remove student", variant: "destructive" }),
+    });
+  };
+
+  const handleUnassignMentor = (mentorId: number) => {
+    if (!confirm("Remove this mentor from the cohort?")) return;
+    unassignMentorMutation.mutate({ id: cohortId, mentorId }, {
+      onSuccess: () => { toast({ title: "Mentor unassigned" }); refetchMentors(); },
+      onError: () => toast({ title: "Failed to remove mentor", variant: "destructive" }),
+    });
+  };
 
   if (isLoadingCohort) {
     return <div className="p-8 space-y-6 max-w-6xl mx-auto"><Skeleton className="h-8 w-24" /><Skeleton className="h-12 w-2/3" /><Skeleton className="h-64 w-full" /></div>;
@@ -42,20 +172,164 @@ export default function CohortDetail() {
             <Badge variant="outline" className="uppercase tracking-wider">{cohort.status}</Badge>
             <span className="text-sm text-gray-500 flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              {format(new Date(cohort.startDate), "MMM d, yyyy")} 
+              {format(new Date(cohort.startDate), "MMM d, yyyy")}
               {cohort.endDate && ` - ${format(new Date(cohort.endDate), "MMM d, yyyy")}`}
             </span>
           </div>
           <h1 className="text-4xl font-display font-bold text-gray-900">{cohort.name}</h1>
         </div>
-        {me?.role === 'admin' && (
-          <Button variant="outline">Edit Cohort</Button>
+        {isAdmin && (
+          <Button variant="outline" onClick={openEdit}>Edit Cohort</Button>
         )}
       </div>
 
       <p className="text-lg text-gray-600 max-w-3xl mb-10 leading-relaxed">
         {cohort.description || "No description provided for this cohort."}
       </p>
+
+      {/* Edit Cohort Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>Edit Cohort</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input value={editForm.name} onChange={e => setEdit("name", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea rows={3} value={editForm.description} onChange={e => setEdit("description", e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Start Date</Label>
+                <Input type="date" value={editForm.startDate} onChange={e => setEdit("startDate", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>End Date</Label>
+                <Input type="date" value={editForm.endDate} onChange={e => setEdit("endDate", e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={editForm.status} onValueChange={v => setEdit("status", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Capacity</Label>
+                <Input type="number" value={editForm.capacity} onChange={e => setEdit("capacity", e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button onClick={handleEdit} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enroll Student Dialog */}
+      <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Enroll Student</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Select Student</Label>
+              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={availableStudents.length === 0 ? "No students available" : "Choose a student..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableStudents.map(u => (
+                    <SelectItem key={u.id} value={String(u.id)}>{u.name} ({u.email})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {availableStudents.length === 0 && (
+                <p className="text-sm text-gray-500">All students are already enrolled, or no students have registered yet.</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEnrollOpen(false)}>Cancel</Button>
+            <Button onClick={handleEnroll} disabled={enrollMutation.isPending || !selectedStudentId}>
+              {enrollMutation.isPending ? "Enrolling..." : "Enroll Student"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Mentor Dialog */}
+      <Dialog open={mentorOpen} onOpenChange={setMentorOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Assign Mentor</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Select Mentor</Label>
+              <Select value={selectedMentorId} onValueChange={setSelectedMentorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={availableMentors.length === 0 ? "No mentors available" : "Choose a mentor..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableMentors.map(u => (
+                    <SelectItem key={u.id} value={String(u.id)}>{u.name} ({u.email})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {availableMentors.length === 0 && (
+                <p className="text-sm text-gray-500">No unassigned mentors found. Users must have the 'mentor' role.</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMentorOpen(false)}>Cancel</Button>
+            <Button onClick={handleAssignMentor} disabled={assignMentorMutation.isPending || !selectedMentorId}>
+              {assignMentorMutation.isPending ? "Assigning..." : "Assign Mentor"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Course Dialog */}
+      <Dialog open={courseOpen} onOpenChange={setCourseOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Add Course to Learning Path</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Select Course</Label>
+              <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={availableCourses.length === 0 ? "All courses already added" : "Choose a course..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCourses.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Order / Phase Number</Label>
+              <Input type="number" placeholder={`e.g. ${(courses?.length || 0) + 1}`} value={courseOrder} onChange={e => setCourseOrder(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCourseOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddCourse} disabled={addCourseMutation.isPending || !selectedCourseId}>
+              {addCourseMutation.isPending ? "Adding..." : "Add to Path"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Tabs defaultValue="roster" className="w-full">
         <TabsList className="mb-8 w-full justify-start h-auto p-1 bg-gray-100/50 rounded-xl">
@@ -73,15 +347,19 @@ export default function CohortDetail() {
         <TabsContent value="roster" className="space-y-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-display font-bold">Students ({enrollments?.length || 0})</h3>
-            {me?.role === 'admin' && <Button size="sm">Enroll Student</Button>}
+            {isAdmin && (
+              <Button size="sm" onClick={() => setEnrollOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" /> Enroll Student
+              </Button>
+            )}
           </div>
-          
+
           {isLoadingEnrollments ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>
           ) : enrollments && enrollments.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {enrollments.map(enr => (
-                <div key={enr.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div key={enr.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm group">
                   <Avatar className="h-10 w-10 border border-gray-100">
                     <AvatarFallback className="bg-primary/10 text-primary font-medium">{enr.studentName.substring(0,2).toUpperCase()}</AvatarFallback>
                   </Avatar>
@@ -89,7 +367,14 @@ export default function CohortDetail() {
                     <div className="font-medium text-gray-900 truncate">{enr.studentName}</div>
                     <div className="text-xs text-gray-500 truncate">{enr.studentEmail}</div>
                   </div>
-                  <Badge variant={enr.status === 'active' ? 'default' : 'secondary'} className="text-[10px] uppercase">{enr.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={enr.status === 'active' ? 'default' : 'secondary'} className="text-[10px] uppercase">{enr.status}</Badge>
+                    {isAdmin && (
+                      <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600" onClick={() => handleRemoveEnrollment(enr.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -103,7 +388,11 @@ export default function CohortDetail() {
         <TabsContent value="path" className="space-y-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-display font-bold">Curriculum Roadmap</h3>
-            {me?.role === 'admin' && <Button size="sm">Add Course</Button>}
+            {isAdmin && (
+              <Button size="sm" onClick={() => setCourseOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Course
+              </Button>
+            )}
           </div>
 
           {isLoadingCourses ? (
@@ -135,7 +424,11 @@ export default function CohortDetail() {
         <TabsContent value="mentors" className="space-y-4">
            <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-display font-bold">Assigned Mentors</h3>
-            {me?.role === 'admin' && <Button size="sm">Assign Mentor</Button>}
+            {isAdmin && (
+              <Button size="sm" onClick={() => setMentorOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" /> Assign Mentor
+              </Button>
+            )}
           </div>
 
           {isLoadingMentors ? (
@@ -143,7 +436,12 @@ export default function CohortDetail() {
           ) : mentors && mentors.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-4">
               {mentors.map(m => (
-                <Card key={m.id} className="border-gray-100 shadow-sm text-center p-6">
+                <Card key={m.id} className="border-gray-100 shadow-sm text-center p-6 relative group">
+                  {isAdmin && (
+                    <Button size="icon" variant="ghost" className="absolute top-3 right-3 h-7 w-7 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600" onClick={() => handleUnassignMentor(m.mentorId)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                   <Avatar className="h-16 w-16 mx-auto mb-4 border-2 border-gray-50">
                     <AvatarFallback className="bg-orange-100 text-orange-700 text-xl">{m.mentorName.substring(0,2).toUpperCase()}</AvatarFallback>
                   </Avatar>
