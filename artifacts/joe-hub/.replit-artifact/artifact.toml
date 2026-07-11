@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "JOE Hub"
+version = "1.0.0"
+id = "artifacts/joe-hub"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18482
+
+[services.development]
+run = "pnpm --filter @workspace/joe-hub run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/joe-hub", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/joe-hub/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18482"
+BASE_PATH = "/"

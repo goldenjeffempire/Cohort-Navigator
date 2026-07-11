@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: JOE Hub API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: users
+  - name: cohorts
+  - name: courses
+  - name: modules
+  - name: lessons
+  - name: assignments
+  - name: quizzes
+  - name: announcements
+  - name: notifications
+  - name: scholarships
+  - name: dashboard
 paths:
   /healthz:
     get:
@@ -24,6 +34,1616 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ---------- Users ----------
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get the current authenticated user's profile (JIT provisioned)
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update the current user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin)
+      parameters:
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/UserRole"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /users/{id}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [users]
+      summary: Update a user's role (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRoleUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+
+  # ---------- Cohorts ----------
+  /cohorts:
+    get:
+      operationId: listCohorts
+      tags: [cohorts]
+      summary: List cohorts
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/CohortStatus"
+      responses:
+        "200":
+          description: List of cohorts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cohort"
+    post:
+      operationId: createCohort
+      tags: [cohorts]
+      summary: Create a cohort (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CohortInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cohort"
+  /cohorts/{id}:
+    get:
+      operationId: getCohort
+      tags: [cohorts]
+      summary: Get a cohort
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cohort
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cohort"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCohort
+      tags: [cohorts]
+      summary: Update a cohort (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CohortUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cohort"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCohort
+      tags: [cohorts]
+      summary: Delete a cohort (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /cohorts/{id}/students:
+    get:
+      operationId: listCohortEnrollments
+      tags: [cohorts]
+      summary: List students enrolled in a cohort
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CohortEnrollment"
+    post:
+      operationId: enrollStudent
+      tags: [cohorts]
+      summary: Enroll a student in a cohort (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CohortEnrollment"
+  /cohorts/{id}/students/{enrollmentId}:
+    patch:
+      operationId: updateEnrollment
+      tags: [cohorts]
+      summary: Update an enrollment status (admin) — e.g. graduate, drop
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: enrollmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollmentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CohortEnrollment"
+        "404":
+          description: Not found
+    delete:
+      operationId: removeEnrollment
+      tags: [cohorts]
+      summary: Remove a student from a cohort (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: enrollmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /cohorts/{id}/mentors:
+    get:
+      operationId: listCohortMentors
+      tags: [cohorts]
+      summary: List mentors assigned to a cohort
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of mentor assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MentorCohort"
+    post:
+      operationId: assignMentor
+      tags: [cohorts]
+      summary: Assign a mentor to a cohort (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MentorAssignmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorCohort"
+  /cohorts/{id}/mentors/{mentorCohortId}:
+    delete:
+      operationId: unassignMentor
+      tags: [cohorts]
+      summary: Remove a mentor from a cohort (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: mentorCohortId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /cohorts/{id}/courses:
+    get:
+      operationId: listCohortCourses
+      tags: [cohorts]
+      summary: List courses assigned to a cohort
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of cohort courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CohortCourse"
+    post:
+      operationId: addCohortCourse
+      tags: [cohorts]
+      summary: Add a course to a cohort's learning path (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CohortCourseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CohortCourse"
+  /cohorts/{id}/courses/{cohortCourseId}:
+    delete:
+      operationId: removeCohortCourse
+      tags: [cohorts]
+      summary: Remove a course from a cohort's learning path (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cohortCourseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  # ---------- Courses ----------
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List all courses in the catalog
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a course (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+  /courses/{id}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCourse
+      tags: [courses]
+      summary: Update a course (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCourse
+      tags: [courses]
+      summary: Delete a course (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /courses/{id}/modules:
+    get:
+      operationId: listCourseModules
+      tags: [modules]
+      summary: List modules of a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of modules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Module"
+    post:
+      operationId: createModule
+      tags: [modules]
+      summary: Create a module in a course (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModuleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+
+  # ---------- Modules ----------
+  /modules/{id}:
+    get:
+      operationId: getModule
+      tags: [modules]
+      summary: Get a module
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Module
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateModule
+      tags: [modules]
+      summary: Update a module (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModuleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteModule
+      tags: [modules]
+      summary: Delete a module (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /modules/{id}/lessons:
+    get:
+      operationId: listModuleLessons
+      tags: [lessons]
+      summary: List lessons of a module
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of lessons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lesson"
+    post:
+      operationId: createLesson
+      tags: [lessons]
+      summary: Create a lesson in a module (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+
+  # ---------- Lessons ----------
+  /lessons/continue-learning:
+    get:
+      operationId: getContinueLearning
+      tags: [lessons]
+      summary: Get the current student's most recent in-progress lesson
+      responses:
+        "200":
+          description: Continue-learning lesson, or null if none
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContinueLearning"
+  /lessons/{id}:
+    get:
+      operationId: getLesson
+      tags: [lessons]
+      summary: Get a lesson (includes the current student's progress/bookmark state)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lesson
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateLesson
+      tags: [lessons]
+      summary: Update a lesson (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteLesson
+      tags: [lessons]
+      summary: Delete a lesson (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /lessons/{id}/resources:
+    get:
+      operationId: listLessonResources
+      tags: [lessons]
+      summary: List downloadable resources for a lesson
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LessonResource"
+    post:
+      operationId: addLessonResource
+      tags: [lessons]
+      summary: Add a downloadable resource to a lesson (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonResourceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LessonResource"
+  /lessons/{id}/resources/{resourceId}:
+    delete:
+      operationId: removeLessonResource
+      tags: [lessons]
+      summary: Remove a resource from a lesson (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /lessons/{id}/progress:
+    post:
+      operationId: setLessonProgress
+      tags: [lessons]
+      summary: Mark a lesson complete/incomplete for the current student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonProgressInput"
+      responses:
+        "200":
+          description: Updated progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LessonProgress"
+  /lessons/{id}/bookmark:
+    post:
+      operationId: toggleLessonBookmark
+      tags: [lessons]
+      summary: Toggle a bookmark on a lesson for the current student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Current bookmark state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkState"
+
+  # ---------- Assignments ----------
+  /assignments:
+    get:
+      operationId: listAssignments
+      tags: [assignments]
+      summary: List assignments
+      parameters:
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assignment"
+    post:
+      operationId: createAssignment
+      tags: [assignments]
+      summary: Create an assignment (admin/mentor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+  /assignments/{id}:
+    get:
+      operationId: getAssignment
+      tags: [assignments]
+      summary: Get an assignment (includes the current student's submission status if applicable)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAssignment
+      tags: [assignments]
+      summary: Update an assignment (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteAssignment
+      tags: [assignments]
+      summary: Delete an assignment (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /assignments/{id}/submissions:
+    get:
+      operationId: listSubmissions
+      tags: [assignments]
+      summary: List all submissions for an assignment (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+    post:
+      operationId: submitAssignment
+      tags: [assignments]
+      summary: Submit (or resubmit) an assignment as the current student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+  /assignments/{id}/submissions/me:
+    get:
+      operationId: listMySubmissions
+      tags: [assignments]
+      summary: List the current student's submission history for an assignment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+  /submissions/{id}/grade:
+    patch:
+      operationId: gradeSubmission
+      tags: [assignments]
+      summary: Grade a submission (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionGradeInput"
+      responses:
+        "200":
+          description: Graded submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "404":
+          description: Not found
+
+  # ---------- Quizzes ----------
+  /quizzes:
+    get:
+      operationId: listQuizzes
+      tags: [quizzes]
+      summary: List quizzes
+      parameters:
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quiz"
+    post:
+      operationId: createQuiz
+      tags: [quizzes]
+      summary: Create a quiz (admin/mentor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+  /quizzes/{id}:
+    get:
+      operationId: getQuiz
+      tags: [quizzes]
+      summary: Get a quiz (question options omit isCorrect for students)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateQuiz
+      tags: [quizzes]
+      summary: Update a quiz (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteQuiz
+      tags: [quizzes]
+      summary: Delete a quiz (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /quizzes/{id}/questions:
+    get:
+      operationId: listQuizQuestions
+      tags: [quizzes]
+      summary: List questions of a quiz (admin/mentor view, includes correct answers)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+    post:
+      operationId: createQuestion
+      tags: [quizzes]
+      summary: Create a question with options for a quiz (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+  /questions/{id}:
+    patch:
+      operationId: updateQuestion
+      tags: [quizzes]
+      summary: Update a question and replace its options (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteQuestion
+      tags: [quizzes]
+      summary: Delete a question (admin/mentor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /quizzes/{id}/attempts:
+    post:
+      operationId: startQuizAttempt
+      tags: [quizzes]
+      summary: Start a new timed attempt on a quiz as the current student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Created attempt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+  /quizzes/{id}/attempts/me:
+    get:
+      operationId: listMyQuizAttempts
+      tags: [quizzes]
+      summary: List the current student's attempt history for a quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of attempts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Attempt"
+  /attempts/{id}:
+    get:
+      operationId: getAttempt
+      tags: [quizzes]
+      summary: Get an attempt, including answered questions so far
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Attempt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+        "404":
+          description: Not found
+  /attempts/{id}/answers:
+    post:
+      operationId: submitAnswer
+      tags: [quizzes]
+      summary: Submit (or change) an answer for one question in an in-progress attempt
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerInput"
+      responses:
+        "200":
+          description: Recorded answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+  /attempts/{id}/submit:
+    post:
+      operationId: submitQuizAttempt
+      tags: [quizzes]
+      summary: Finalize an attempt and automatically grade it
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Graded attempt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+
+  # ---------- Announcements ----------
+  /announcements:
+    get:
+      operationId: listAnnouncements
+      tags: [announcements]
+      summary: List announcements visible to the current user
+      parameters:
+        - name: cohortId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Announcement"
+    post:
+      operationId: createAnnouncement
+      tags: [announcements]
+      summary: Create an announcement (admin/mentor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+  /announcements/{id}:
+    get:
+      operationId: getAnnouncement
+      tags: [announcements]
+      summary: Get an announcement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Announcement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAnnouncement
+      tags: [announcements]
+      summary: Update an announcement (admin/mentor, author only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteAnnouncement
+      tags: [announcements]
+      summary: Delete an announcement (admin/mentor, author only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  # ---------- Notifications ----------
+  /notifications/me:
+    get:
+      operationId: listMyNotifications
+      tags: [notifications]
+      summary: List the current user's notifications
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a single notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "404":
+          description: Not found
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all of the current user's notifications as read
+      responses:
+        "200":
+          description: List of updated notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  # ---------- Scholarships ----------
+  /scholarship-applications:
+    get:
+      operationId: listScholarshipApplications
+      tags: [scholarships]
+      summary: List scholarship applications (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ScholarshipStatus"
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScholarshipApplication"
+    post:
+      operationId: createScholarshipApplication
+      tags: [scholarships]
+      summary: Apply for a scholarship as the current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScholarshipApplicationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScholarshipApplication"
+  /scholarship-applications/me:
+    get:
+      operationId: listMyScholarshipApplications
+      tags: [scholarships]
+      summary: List the current user's own scholarship applications
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScholarshipApplication"
+  /scholarship-applications/{id}:
+    get:
+      operationId: getScholarshipApplication
+      tags: [scholarships]
+      summary: Get a scholarship application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScholarshipApplication"
+        "404":
+          description: Not found
+  /scholarship-applications/{id}/review:
+    patch:
+      operationId: reviewScholarshipApplication
+      tags: [scholarships]
+      summary: Approve or reject a scholarship application (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScholarshipReviewInput"
+      responses:
+        "200":
+          description: Reviewed application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScholarshipApplication"
+        "404":
+          description: Not found
+
+  # ---------- Dashboards ----------
+  /dashboard/student:
+    get:
+      operationId: getStudentDashboard
+      tags: [dashboard]
+      summary: Get the current student's dashboard summary
+      responses:
+        "200":
+          description: Student dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentDashboard"
+  /dashboard/mentor:
+    get:
+      operationId: getMentorDashboard
+      tags: [dashboard]
+      summary: Get the current mentor's dashboard summary
+      responses:
+        "200":
+          description: Mentor dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorDashboard"
+  /dashboard/admin:
+    get:
+      operationId: getAdminDashboard
+      tags: [dashboard]
+      summary: Get the admin dashboard summary
+      responses:
+        "200":
+          description: Admin dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDashboard"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +1654,555 @@ components:
       required:
         - status
 
+    UserRole:
+      type: string
+      enum: [student, mentor, admin]
+
+    CohortStatus:
+      type: string
+      enum: [upcoming, active, completed]
+
+    EnrollmentStatus:
+      type: string
+      enum: [active, graduated, dropped]
+
+    SubmissionStatus:
+      type: string
+      enum: [submitted, graded, late]
+
+    AttemptStatus:
+      type: string
+      enum: [in_progress, completed]
+
+    ScholarshipStatus:
+      type: string
+      enum: [pending, approved, rejected]
+
+    User:
+      type: object
+      required: [id, clerkId, email, name, role, createdAt]
+      properties:
+        id: { type: integer }
+        clerkId: { type: string }
+        email: { type: string }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/UserRole" }
+        avatarUrl: { type: ["string", "null"] }
+        bio: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    UserUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        bio: { type: string }
+        avatarUrl: { type: string }
+    UserRoleUpdate:
+      type: object
+      required: [role]
+      properties:
+        role: { $ref: "#/components/schemas/UserRole" }
+
+    Cohort:
+      type: object
+      required: [id, name, startDate, status, studentCount, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        startDate: { type: string, format: date }
+        endDate: { type: ["string", "null"], format: date }
+        status: { $ref: "#/components/schemas/CohortStatus" }
+        capacity: { type: ["integer", "null"] }
+        studentCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    CohortInput:
+      type: object
+      required: [name, startDate]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { $ref: "#/components/schemas/CohortStatus" }
+        capacity: { type: integer }
+    CohortUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { $ref: "#/components/schemas/CohortStatus" }
+        capacity: { type: integer }
+
+    CohortEnrollment:
+      type: object
+      required: [id, cohortId, studentId, studentName, studentEmail, status, enrolledAt]
+      properties:
+        id: { type: integer }
+        cohortId: { type: integer }
+        studentId: { type: integer }
+        studentName: { type: string }
+        studentEmail: { type: string }
+        status: { $ref: "#/components/schemas/EnrollmentStatus" }
+        enrolledAt: { type: string, format: date-time }
+    EnrollmentInput:
+      type: object
+      required: [studentId]
+      properties:
+        studentId: { type: integer }
+    EnrollmentUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/EnrollmentStatus" }
+
+    MentorCohort:
+      type: object
+      required: [id, cohortId, mentorId, mentorName, mentorEmail, assignedAt]
+      properties:
+        id: { type: integer }
+        cohortId: { type: integer }
+        mentorId: { type: integer }
+        mentorName: { type: string }
+        mentorEmail: { type: string }
+        assignedAt: { type: string, format: date-time }
+    MentorAssignmentInput:
+      type: object
+      required: [mentorId]
+      properties:
+        mentorId: { type: integer }
+
+    CohortCourse:
+      type: object
+      required: [id, cohortId, courseId, courseTitle, order, addedAt]
+      properties:
+        id: { type: integer }
+        cohortId: { type: integer }
+        courseId: { type: integer }
+        courseTitle: { type: string }
+        order: { type: integer }
+        addedAt: { type: string, format: date-time }
+    CohortCourseInput:
+      type: object
+      required: [courseId]
+      properties:
+        courseId: { type: integer }
+        order: { type: integer, default: 0 }
+
+    Course:
+      type: object
+      required: [id, title, moduleCount, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        thumbnailUrl: { type: ["string", "null"] }
+        moduleCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    CourseInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        thumbnailUrl: { type: string }
+    CourseUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        thumbnailUrl: { type: string }
+
+    Module:
+      type: object
+      required: [id, courseId, title, order, lessonCount, createdAt]
+      properties:
+        id: { type: integer }
+        courseId: { type: integer }
+        title: { type: string }
+        order: { type: integer }
+        lessonCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    ModuleInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+        order: { type: integer, default: 0 }
+    ModuleUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        order: { type: integer }
+
+    Lesson:
+      type: object
+      required: [id, moduleId, title, order, createdAt, completed, bookmarked]
+      properties:
+        id: { type: integer }
+        moduleId: { type: integer }
+        title: { type: string }
+        content: { type: ["string", "null"] }
+        videoUrl: { type: ["string", "null"] }
+        order: { type: integer }
+        completed: { type: boolean }
+        bookmarked: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    LessonInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+        content: { type: string }
+        videoUrl: { type: string }
+        order: { type: integer, default: 0 }
+    LessonUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        content: { type: string }
+        videoUrl: { type: string }
+        order: { type: integer }
+
+    LessonResource:
+      type: object
+      required: [id, lessonId, title, fileUrl, createdAt]
+      properties:
+        id: { type: integer }
+        lessonId: { type: integer }
+        title: { type: string }
+        fileUrl: { type: string }
+        fileType: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    LessonResourceInput:
+      type: object
+      required: [title, fileUrl]
+      properties:
+        title: { type: string, minLength: 1 }
+        fileUrl: { type: string }
+        fileType: { type: string }
+
+    LessonProgress:
+      type: object
+      required: [id, lessonId, studentId, completed, lastAccessedAt]
+      properties:
+        id: { type: integer }
+        lessonId: { type: integer }
+        studentId: { type: integer }
+        completed: { type: boolean }
+        completedAt: { type: ["string", "null"], format: date-time }
+        lastAccessedAt: { type: string, format: date-time }
+    LessonProgressInput:
+      type: object
+      required: [completed]
+      properties:
+        completed: { type: boolean }
+
+    BookmarkState:
+      type: object
+      required: [lessonId, bookmarked]
+      properties:
+        lessonId: { type: integer }
+        bookmarked: { type: boolean }
+
+    ContinueLearning:
+      type: object
+      properties:
+        lessonId: { type: ["integer", "null"] }
+        lessonTitle: { type: ["string", "null"] }
+        moduleId: { type: ["integer", "null"] }
+        courseId: { type: ["integer", "null"] }
+        courseTitle: { type: ["string", "null"] }
+
+    Assignment:
+      type: object
+      required: [id, courseId, title, maxScore, createdAt]
+      properties:
+        id: { type: integer }
+        courseId: { type: integer }
+        moduleId: { type: ["integer", "null"] }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        dueDate: { type: ["string", "null"], format: date-time }
+        maxScore: { type: integer }
+        mySubmissionStatus: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    AssignmentInput:
+      type: object
+      required: [courseId, title]
+      properties:
+        courseId: { type: integer }
+        moduleId: { type: integer }
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        dueDate: { type: string, format: date-time }
+        maxScore: { type: integer, default: 100 }
+    AssignmentUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        dueDate: { type: string, format: date-time }
+        maxScore: { type: integer }
+
+    Submission:
+      type: object
+      required: [id, assignmentId, studentId, studentName, status, submittedAt]
+      properties:
+        id: { type: integer }
+        assignmentId: { type: integer }
+        studentId: { type: integer }
+        studentName: { type: string }
+        fileUrl: { type: ["string", "null"] }
+        comment: { type: ["string", "null"] }
+        status: { $ref: "#/components/schemas/SubmissionStatus" }
+        score: { type: ["integer", "null"] }
+        feedback: { type: ["string", "null"] }
+        submittedAt: { type: string, format: date-time }
+        gradedAt: { type: ["string", "null"], format: date-time }
+    SubmissionInput:
+      type: object
+      properties:
+        fileUrl: { type: string }
+        comment: { type: string }
+    SubmissionGradeInput:
+      type: object
+      required: [score]
+      properties:
+        score: { type: integer }
+        feedback: { type: string }
+
+    Quiz:
+      type: object
+      required: [id, courseId, title, questionCount, createdAt]
+      properties:
+        id: { type: integer }
+        courseId: { type: integer }
+        moduleId: { type: ["integer", "null"] }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        timeLimitMinutes: { type: ["integer", "null"] }
+        questionCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    QuizInput:
+      type: object
+      required: [courseId, title]
+      properties:
+        courseId: { type: integer }
+        moduleId: { type: integer }
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        timeLimitMinutes: { type: integer }
+    QuizUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        timeLimitMinutes: { type: integer }
+
+    Option:
+      type: object
+      required: [id, questionId, optionText, order]
+      properties:
+        id: { type: integer }
+        questionId: { type: integer }
+        optionText: { type: string }
+        isCorrect: { type: boolean }
+        order: { type: integer }
+    OptionInput:
+      type: object
+      required: [optionText, isCorrect]
+      properties:
+        optionText: { type: string, minLength: 1 }
+        isCorrect: { type: boolean }
+        order: { type: integer, default: 0 }
+
+    Question:
+      type: object
+      required: [id, quizId, question, order, options]
+      properties:
+        id: { type: integer }
+        quizId: { type: integer }
+        question: { type: string }
+        order: { type: integer }
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/Option"
+    QuestionInput:
+      type: object
+      required: [question, options]
+      properties:
+        question: { type: string, minLength: 1 }
+        order: { type: integer, default: 0 }
+        options:
+          type: array
+          minItems: 2
+          items:
+            $ref: "#/components/schemas/OptionInput"
+    QuestionUpdate:
+      type: object
+      properties:
+        question: { type: string, minLength: 1 }
+        order: { type: integer }
+        options:
+          type: array
+          minItems: 2
+          items:
+            $ref: "#/components/schemas/OptionInput"
+
+    Answer:
+      type: object
+      required: [id, attemptId, questionId, selectedOptionId, isCorrect]
+      properties:
+        id: { type: integer }
+        attemptId: { type: integer }
+        questionId: { type: integer }
+        selectedOptionId: { type: integer }
+        isCorrect: { type: boolean }
+    AnswerInput:
+      type: object
+      required: [questionId, selectedOptionId]
+      properties:
+        questionId: { type: integer }
+        selectedOptionId: { type: integer }
+
+    Attempt:
+      type: object
+      required: [id, quizId, studentId, totalQuestions, status, startedAt]
+      properties:
+        id: { type: integer }
+        quizId: { type: integer }
+        studentId: { type: integer }
+        score: { type: ["integer", "null"] }
+        totalQuestions: { type: integer }
+        status: { $ref: "#/components/schemas/AttemptStatus" }
+        startedAt: { type: string, format: date-time }
+        submittedAt: { type: ["string", "null"], format: date-time }
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Answer"
+
+    Announcement:
+      type: object
+      required: [id, authorId, authorName, title, body, createdAt]
+      properties:
+        id: { type: integer }
+        cohortId: { type: ["integer", "null"] }
+        authorId: { type: integer }
+        authorName: { type: string }
+        title: { type: string }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+    AnnouncementInput:
+      type: object
+      required: [title, body]
+      properties:
+        cohortId: { type: integer }
+        title: { type: string, minLength: 1 }
+        body: { type: string, minLength: 1 }
+    AnnouncementUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        body: { type: string, minLength: 1 }
+
+    Notification:
+      type: object
+      required: [id, userId, type, title, body, isRead, createdAt]
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        body: { type: string }
+        link: { type: ["string", "null"] }
+        isRead: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    ScholarshipApplication:
+      type: object
+      required: [id, applicantUserId, applicantName, applicantEmail, fullName, email, essay, status, appliedAt]
+      properties:
+        id: { type: integer }
+        applicantUserId: { type: integer }
+        applicantName: { type: string }
+        applicantEmail: { type: string }
+        cohortId: { type: ["integer", "null"] }
+        fullName: { type: string }
+        email: { type: string }
+        essay: { type: string }
+        status: { $ref: "#/components/schemas/ScholarshipStatus" }
+        reviewerId: { type: ["integer", "null"] }
+        reviewNotes: { type: ["string", "null"] }
+        appliedAt: { type: string, format: date-time }
+        reviewedAt: { type: ["string", "null"], format: date-time }
+    ScholarshipApplicationInput:
+      type: object
+      required: [fullName, email, essay]
+      properties:
+        cohortId: { type: integer }
+        fullName: { type: string, minLength: 1 }
+        email: { type: string, minLength: 1 }
+        essay: { type: string, minLength: 1 }
+    ScholarshipReviewInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [approved, rejected] }
+        reviewNotes: { type: string }
+
+    StudentDashboard:
+      type: object
+      required: [enrolledCourses, progressPercent, upcomingAssignments, recentAnnouncements, unreadNotificationCount]
+      properties:
+        currentCohort:
+          oneOf:
+            - $ref: "#/components/schemas/Cohort"
+            - type: "null"
+        enrolledCourses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Course"
+        progressPercent: { type: number }
+        upcomingAssignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Assignment"
+        recentAnnouncements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
+        unreadNotificationCount: { type: integer }
+
+    MentorDashboard:
+      type: object
+      required: [assignedCohorts, studentCount, pendingSubmissionCount, recentSubmissions]
+      properties:
+        assignedCohorts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Cohort"
+        studentCount: { type: integer }
+        pendingSubmissionCount: { type: integer }
+        recentSubmissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+
+    AdminDashboard:
+      type: object
+      required: [totalStudents, totalMentors, totalCohorts, activeCohorts, totalCourses, pendingScholarshipCount, recentAnnouncements]
+      properties:
+        totalStudents: { type: integer }
+        totalMentors: { type: integer }
+        totalCohorts: { type: integer }
+        activeCohorts: { type: integer }
+        totalCourses: { type: integer }
+        pendingScholarshipCount: { type: integer }
+        recentAnnouncements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
