@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { 
   LayoutDashboard, BookOpen, Users, ClipboardList, AlertCircle, 
-  Bell, Award, Settings, LogOut, Loader2, Menu, Megaphone
+  Bell, Award, Settings, LogOut, Loader2, Menu, Megaphone,
+  Code2, Terminal, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +28,10 @@ function AppSidebar() {
     { label: "Assignments", href: "/assignments", icon: ClipboardList },
     { label: "Quizzes", href: "/quizzes", icon: AlertCircle },
     { label: "Announcements", href: "/announcements", icon: Megaphone },
+    // Phase 3 — always visible
+    { label: "Challenges", href: "/challenges", icon: Code2 },
+    { label: "Workspace", href: "/workspace", icon: Terminal },
+    { label: "Progress", href: "/coding-progress", icon: BarChart3 },
   ];
 
   if (me?.role === "student") {
@@ -36,7 +41,12 @@ function AppSidebar() {
   } else if (me?.role === "admin") {
     navItems.push(
       { label: "Applications", href: "/admin/scholarship-applications", icon: Award },
-      { label: "Users", href: "/admin/users", icon: Settings }
+      { label: "Users", href: "/admin/users", icon: Settings },
+      { label: "Manage Challenges", href: "/admin/challenges", icon: Code2 },
+    );
+  } else if (me?.role === "mentor") {
+    navItems.push(
+      { label: "Manage Challenges", href: "/admin/challenges", icon: Code2 },
     );
   }
 
@@ -144,8 +154,13 @@ function MobileHeader() {
     if (location.startsWith("/profile")) return "Profile";
     if (location.startsWith("/admin/users")) return "Users";
     if (location.startsWith("/admin/scholarship")) return "Applications";
+    if (location.startsWith("/admin/challenges")) return "Manage Challenges";
     if (location.startsWith("/scholarship/apply")) return "Apply for Scholarship";
     if (location.startsWith("/scholarship/status")) return "Application Status";
+    // Phase 3
+    if (location.startsWith("/challenges")) return "Coding Challenges";
+    if (location.startsWith("/workspace")) return "Workspace";
+    if (location.startsWith("/coding-progress")) return "Coding Progress";
     return "";
   }, [location]);
 

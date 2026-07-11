@@ -27,6 +27,12 @@ import AdminUsers from "@/pages/AdminUsers";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/not-found";
 import AppLayout from "@/components/layout/AppLayout";
+// Phase 3 — Coding workspace & assessment
+import Challenges from "@/pages/Challenges";
+import ChallengeDetail from "@/pages/ChallengeDetail";
+import Workspace from "@/pages/Workspace";
+import CodingProgress from "@/pages/CodingProgress";
+import AdminChallenges from "@/pages/AdminChallenges";
 
 const queryClient = new QueryClient();
 
@@ -183,7 +189,14 @@ function ProtectedRoutes() {
             
             <Route path="/admin/scholarship-applications" component={AdminScholarships} />
             <Route path="/admin/users" component={AdminUsers} />
-            
+            <Route path="/admin/challenges" component={AdminChallenges} />
+
+            {/* Phase 3 — Coding workspace & assessment */}
+            <Route path="/challenges" component={Challenges} />
+            <Route path="/challenges/:id" component={ChallengeDetail} />
+            <Route path="/workspace" component={Workspace} />
+            <Route path="/coding-progress" component={CodingProgress} />
+
             <Route component={NotFound} />
           </Switch>
         </AppLayout>
