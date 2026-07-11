@@ -176,6 +176,9 @@ importers:
       '@clerk/shared':
         specifier: ^4.25.2
         version: 4.25.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@workspace/ai-engine':
+        specifier: workspace:*
+        version: link:../../lib/ai-engine
       '@workspace/api-zod':
         specifier: workspace:*
         version: link:../../lib/api-zod
@@ -613,6 +616,22 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+
+  lib/ai-engine:
+    dependencies:
+      '@workspace/db':
+        specifier: workspace:*
+        version: link:../db
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@types/pg@8.20.0)(pg@8.22.0)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.4
 
   lib/api-client-react:
     dependencies:

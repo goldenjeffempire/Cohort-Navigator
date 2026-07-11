@@ -1,15 +1,18 @@
-# [Project name]
+# JOE Hub (Cohort Navigator)
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A cohort-based tech-career training platform: courses/lessons, cohorts, assignments, quizzes, coding challenges with an in-browser workspace, scholarships, announcements/notifications, and an AI assistant, with admin tooling for users, challenges, and scholarships.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (workflow: "API Server")
+- `pnpm --filter @workspace/joe-hub run dev` — run the web app (workflow: "web")
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/db run seed` — seed sample courses/lessons/cohorts
+- Required env: `DATABASE_URL` — Postgres connection string (already provisioned)
+- Auth: Replit-managed Clerk (`CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY` — already provisioned, dev keys)
 
 ## Stack
 
