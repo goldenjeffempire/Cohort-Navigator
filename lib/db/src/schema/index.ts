@@ -7,3 +7,4 @@ export * from "./quizzes";
 export * from "./announcements";
 export * from "./notifications";
 export * from "./scholarships";
+export * from "./coding";
