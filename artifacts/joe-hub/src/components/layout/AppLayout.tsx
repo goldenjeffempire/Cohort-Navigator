@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { 
   LayoutDashboard, BookOpen, Users, ClipboardList, AlertCircle, 
   Bell, Award, Settings, LogOut, Loader2, Menu, Megaphone,
-  Code2, Terminal, BarChart3,
+  Code2, Terminal, BarChart3, Brain, Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +32,9 @@ function AppSidebar() {
     { label: "Challenges", href: "/challenges", icon: Code2 },
     { label: "Workspace", href: "/workspace", icon: Terminal },
     { label: "Progress", href: "/coding-progress", icon: BarChart3 },
+    // Phase 4 — AI
+    { label: "AI Hub", href: "/ai", icon: Brain },
+    { label: "My Analytics", href: "/ai/analytics", icon: Activity },
   ];
 
   if (me?.role === "student") {
@@ -43,10 +46,12 @@ function AppSidebar() {
       { label: "Applications", href: "/admin/scholarship-applications", icon: Award },
       { label: "Users", href: "/admin/users", icon: Settings },
       { label: "Manage Challenges", href: "/admin/challenges", icon: Code2 },
+      { label: "AI Platform", href: "/admin/ai", icon: Brain },
     );
   } else if (me?.role === "mentor") {
     navItems.push(
       { label: "Manage Challenges", href: "/admin/challenges", icon: Code2 },
+      { label: "AI Platform", href: "/admin/ai", icon: Brain },
     );
   }
 

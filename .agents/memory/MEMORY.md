@@ -4,3 +4,4 @@
 - [lib/db composite TS project staleness](lib-db-tsc-build-staleness.md) — new schema exports invisible to dependents until root `tsc --build` reruns.
 - [Orval date-typed columns produce JS Date, not string](orval-date-column-mismatch.md) — manual conversion needed before Drizzle insert/update on `date`-mode columns.
 - [Package firewall blocks transitive deps](package-firewall-blocks-transitive-deps.md) — pnpm add can fail on an unrelated sub-dependency; revert and use a dep-free alternative.
+- [Phase 4 AI build decisions](phase4-ai-build.md) — customFetch export gap, AI pages never routed before P4, interview sessions need complete() not stream().

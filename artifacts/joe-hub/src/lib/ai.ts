@@ -89,6 +89,13 @@ export const aiKeys = {
   adminAudit: () => ["ai-admin-audit"] as const,
   knowledgeStats: () => ["ai-knowledge-stats"] as const,
   learningInsights: () => ["ai-learning-insights"] as const,
+  learningProfile: () => ["ai-learning-profile"] as const,
+  learningRecommendations: () => ["ai-learning-recommendations"] as const,
+  studentAnalytics: (id: number) => ["ai-student-analytics", id] as const,
+  cohortAnalytics: (id: number) => ["ai-cohort-analytics", id] as const,
+  platformAnalytics: () => ["ai-platform-analytics"] as const,
+  atRiskStudents: () => ["ai-at-risk-students"] as const,
+  interviewSession: (id: number) => ["ai-interview-session", id] as const,
 };
 
 // ─── Conversation hooks ────────────────────────────────────────────────────────
@@ -202,6 +209,133 @@ export function useAIAdminAudit() {
   return useQuery({
     queryKey: aiKeys.adminAudit(),
     queryFn: () => customFetch<any[]>("/api/ai/admin/audit"),
+  });
+}
+
+// ─── Learning Profile & Adaptive Learning hooks ────────────────────────────────
+
+export interface LearningProfile {
+  skillScores: Record<string, number>;
+  weakTopics: string[];
+  strongTopics: string[];
+  learningVelocity: number;
+  riskLevel: string;
+  competencyScore: number;
+  totalAIInteractions: number;
+  preferredMode: string | null;
+  recommendations: Array<{
+    type: string;
+    skillArea: string;
+    detail: string;
+    priority: "high" | "medium" | "low";
+    actionItems: string[];
+  }>;
+}
+
+export function useLearningProfile() {
+  return useQuery({
+    queryKey: aiKeys.learningProfile(),
+    queryFn: () => customFetch<{ profile: LearningProfile; recentAssessments: any[] }>("/api/ai/learning/profile"),
+  });
+}
+
+export function useRecordSkillAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { skillArea: string; score: number; source: string; sourceId?: number }) =>
+      customFetch<{ updated: boolean; skillArea: string; newScore: number }>("/api/ai/learning/skill-assessment", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: aiKeys.learningProfile() });
+      qc.invalidateQueries({ queryKey: aiKeys.learningRecommendations() });
+    },
+  });
+}
+
+export function useLearningRecommendations() {
+  return useQuery({
+    queryKey: aiKeys.learningRecommendations(),
+    queryFn: () => customFetch<{ recommendations: LearningProfile["recommendations"] }>("/api/ai/learning/recommendations"),
+  });
+}
+
+export function usePerformanceForecast(weeksRemaining = 8) {
+  return useQuery({
+    queryKey: ["ai-forecast", weeksRemaining],
+    queryFn: () => customFetch<{
+      predictedCompetencyScore: number;
+      confidenceLevel: string;
+      weeksToTargetScore: number | null;
+      trend: "improving" | "stable" | "declining";
+      onTrackForCompletion: boolean;
+    }>(`/api/ai/learning/forecast?weeksRemaining=${weeksRemaining}`),
+  });
+}
+
+// ─── Analytics hooks ───────────────────────────────────────────────────────────
+
+export function useStudentAnalytics(userId: number) {
+  return useQuery({
+    queryKey: aiKeys.studentAnalytics(userId),
+    queryFn: () => customFetch<any>(`/api/ai/analytics/student/${userId}`),
+    enabled: !!userId,
+  });
+}
+
+export function useCohortAnalytics(cohortId: number) {
+  return useQuery({
+    queryKey: aiKeys.cohortAnalytics(cohortId),
+    queryFn: () => customFetch<any>(`/api/ai/analytics/cohort/${cohortId}`),
+    enabled: !!cohortId,
+  });
+}
+
+export function usePlatformAnalytics() {
+  return useQuery({
+    queryKey: aiKeys.platformAnalytics(),
+    queryFn: () => customFetch<any>("/api/ai/analytics/platform"),
+  });
+}
+
+export function useAtRiskStudents() {
+  return useQuery({
+    queryKey: aiKeys.atRiskStudents(),
+    queryFn: () => customFetch<{ atRiskStudents: any[]; total: number }>("/api/ai/learning/at-risk"),
+  });
+}
+
+// ─── Interview Session hooks ───────────────────────────────────────────────────
+
+export function useStartInterviewSession() {
+  return useMutation({
+    mutationFn: (data: {
+      sessionType?: "technical" | "behavioral" | "coding" | "mixed";
+      topic?: string;
+      difficulty?: "easy" | "medium" | "hard";
+      questionCount?: number;
+    }) => customFetch<{ sessionId: number; questionNumber: number; total: number; question: string; keyPoints: string[] }>(
+      "/api/ai/interview/session/start", { method: "POST", body: JSON.stringify(data) }
+    ),
+  });
+}
+
+export function useSubmitSessionAnswer() {
+  return useMutation({
+    mutationFn: ({ sessionId, answer }: { sessionId: number; answer: string }) =>
+      customFetch<any>(`/api/ai/interview/session/${sessionId}/answer`, {
+        method: "POST",
+        body: JSON.stringify({ answer }),
+      }),
+  });
+}
+
+export function useInterviewSessionReport(sessionId: number) {
+  return useQuery({
+    queryKey: aiKeys.interviewSession(sessionId),
+    queryFn: () => customFetch<any>(`/api/ai/interview/session/${sessionId}/report`),
+    enabled: !!sessionId,
   });
 }
 

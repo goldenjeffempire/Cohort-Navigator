@@ -33,6 +33,7 @@ import {
 } from "@workspace/db";
 import { inferenceEngine } from "@workspace/ai-engine/inference";
 import { runEvalSuite } from "@workspace/ai-engine/evaluation";
+import { getCacheStats } from "@workspace/ai-engine/cache";
 import { requireAuth, requireRole } from "../../middlewares/auth.js";
 
 const router = Router();
@@ -53,7 +54,8 @@ router.get("/ai/admin/status", ...adminOnly, async (_req, res): Promise<void> =>
     localOnline,
     registry: { models: modelCount.count },
     usage: { conversations: convCount.count, messages: msgCount.count },
-    version: "1.0.0",
+    cacheStats: getCacheStats(),
+    version: "4.0.0",
   });
 });
 

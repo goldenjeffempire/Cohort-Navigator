@@ -15,6 +15,7 @@ import { eq, desc } from "drizzle-orm";
 import {
   db,
   aiAuditLogsTable,
+  aiInterviewSessionsTable,
   challengeSubmissionsTable,
   usersTable,
 } from "@workspace/db";
@@ -222,6 +223,183 @@ router.get("/ai/learning/insights", requireAuth, async (req, res): Promise<void>
 
   const insights = generateLearningInsights(submissions, 0);
   res.json({ insights });
+});
+
+// ─── Interview sessions (structured multi-turn) ───────────────────────────────
+
+router.post("/ai/interview/session/start", requireAuth, async (req, res): Promise<void> => {
+  const userId = req.user!.id;
+  const { sessionType = "technical", topic, difficulty = "medium", questionCount = 5 } = req.body;
+
+  // Create the session record
+  const [session] = await db.insert(aiInterviewSessionsTable).values({
+    userId,
+    sessionType,
+    topic: topic ?? null,
+    difficulty,
+    totalQuestions: Math.min(Math.max(1, questionCount), 10),
+    questions: [],
+    status: "active",
+  }).returning();
+
+  // Generate the first question via streaming — but first we need it as text
+  // so we can store it in the session and return it. Use non-streaming complete().
+  const system = renderPrompt("interview", { userName: req.user!.name });
+  const userMsg = `You are conducting a ${sessionType} interview${topic ? ` on the topic of ${topic}` : ""}.
+Difficulty level: ${difficulty}.
+Ask question 1 of ${session.totalQuestions}.
+Respond with ONLY the interview question and 3-5 key points the candidate should cover in their answer.
+Format:
+QUESTION: <the question>
+KEY POINTS:
+- <point 1>
+- <point 2>
+- <point 3>`;
+
+  const result = await inferenceEngine.complete(
+    [{ role: "system", content: system }, { role: "user", content: userMsg }],
+  );
+
+  // Parse question and key points from the response
+  const questionMatch = result.content.match(/QUESTION:\s*(.+?)(?:KEY POINTS:|$)/s);
+  const keyPointsMatch = result.content.match(/KEY POINTS:([\s\S]+)/);
+  const question = questionMatch?.[1]?.trim() ?? result.content.trim();
+  const keyPoints = keyPointsMatch?.[1]
+    ?.split("\n")
+    .map((l) => l.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean) ?? [];
+
+  // Store first question in session
+  await db.update(aiInterviewSessionsTable)
+    .set({ questions: [{ question, keyPoints }], updatedAt: new Date() })
+    .where(eq(aiInterviewSessionsTable.id, session.id));
+
+  res.json({ sessionId: session.id, questionNumber: 1, total: session.totalQuestions, question, keyPoints });
+});
+
+router.post("/ai/interview/session/:id/answer", requireAuth, async (req, res): Promise<void> => {
+  const sessionId = parseInt(req.params.id);
+  const { answer } = req.body;
+  if (!answer) { res.status(400).json({ error: "answer required" }); return; }
+
+  const [session] = await db.select().from(aiInterviewSessionsTable)
+    .where(eq(aiInterviewSessionsTable.id, sessionId));
+
+  if (!session) { res.status(404).json({ error: "Session not found" }); return; }
+  if (session.userId !== req.user!.id) { res.status(403).json({ error: "Access denied" }); return; }
+  if (session.status !== "active") { res.status(400).json({ error: "Session is not active" }); return; }
+
+  const questions = [...session.questions];
+  const currentQ = questions[session.currentQuestionIndex];
+  if (!currentQ) { res.status(400).json({ error: "No current question" }); return; }
+
+  // Evaluate the answer
+  const system = renderPrompt("interview", { userName: req.user!.name });
+  const evalMsg = `Evaluate this interview answer:
+
+QUESTION: ${currentQ.question}
+EXPECTED KEY POINTS: ${currentQ.keyPoints?.join(", ") ?? "not specified"}
+
+CANDIDATE ANSWER: ${answer}
+
+Provide a structured evaluation:
+SCORE: <0-10>
+FEEDBACK: <2-3 sentences of constructive feedback>
+COVERED: <which key points were addressed>
+MISSED: <which key points were missed>`;
+
+  const evalResult = await inferenceEngine.complete(
+    [{ role: "system", content: system }, { role: "user", content: evalMsg }],
+  );
+
+  const scoreMatch = evalResult.content.match(/SCORE:\s*(\d+)/i);
+  const feedbackMatch = evalResult.content.match(/FEEDBACK:\s*(.+?)(?:COVERED:|MISSED:|$)/s);
+  const score = scoreMatch ? Math.min(10, Math.max(0, parseInt(scoreMatch[1]))) * 10 : 50;
+  const feedback = feedbackMatch?.[1]?.trim() ?? evalResult.content;
+
+  // Update current question with answer + evaluation
+  questions[session.currentQuestionIndex] = { ...currentQ, answer, score, feedback };
+
+  const nextIndex = session.currentQuestionIndex + 1;
+  const isComplete = nextIndex >= session.totalQuestions;
+
+  if (isComplete) {
+    // Calculate overall score and generate report
+    const answeredQs = questions.filter((q) => q.score !== undefined);
+    const overallScore = answeredQs.length > 0
+      ? answeredQs.reduce((a, q) => a + (q.score ?? 0), 0) / answeredQs.length
+      : 0;
+    const grade = overallScore >= 90 ? "A" : overallScore >= 80 ? "B" : overallScore >= 70 ? "C" : overallScore >= 60 ? "D" : "F";
+    const readinessLevel = overallScore >= 80 ? "Ready for interviews" : overallScore >= 65 ? "Nearly ready" : "More practice needed";
+
+    const report = {
+      overallScore: Math.round(overallScore),
+      grade,
+      strengths: ["Demonstrated knowledge of key concepts", "Clear communication"],
+      improvements: ["Practice more detailed explanations", "Use more specific examples"],
+      recommendations: [
+        "Complete 5 more practice challenges on weak topics",
+        "Review technical interview patterns",
+        "Practice explaining your thought process aloud",
+      ],
+      readinessLevel,
+    };
+
+    await db.update(aiInterviewSessionsTable)
+      .set({ questions, overallScore, status: "completed", report, completedAt: new Date(), updatedAt: new Date() })
+      .where(eq(aiInterviewSessionsTable.id, sessionId));
+
+    res.json({ complete: true, score, feedback, overallScore: report.overallScore, grade, report });
+  } else {
+    // Generate next question
+    const nextMsg = `Continue the ${session.sessionType} interview${session.topic ? ` on ${session.topic}` : ""}.
+The candidate has answered ${nextIndex} of ${session.totalQuestions} questions.
+Previous questions: ${questions.slice(0, nextIndex).map((q, i) => `Q${i + 1}: ${q.question}`).join("; ")}
+Ask question ${nextIndex + 1} of ${session.totalQuestions} (different topic/angle from previous questions).
+Format:
+QUESTION: <the question>
+KEY POINTS:
+- <point 1>
+- <point 2>
+- <point 3>`;
+
+    const nextResult = await inferenceEngine.complete(
+      [{ role: "system", content: system }, { role: "user", content: nextMsg }],
+    );
+
+    const nextQMatch = nextResult.content.match(/QUESTION:\s*(.+?)(?:KEY POINTS:|$)/s);
+    const nextKpMatch = nextResult.content.match(/KEY POINTS:([\s\S]+)/);
+    const nextQuestion = nextQMatch?.[1]?.trim() ?? nextResult.content.trim();
+    const nextKeyPoints = nextKpMatch?.[1]
+      ?.split("\n")
+      .map((l) => l.replace(/^[-•*]\s*/, "").trim())
+      .filter(Boolean) ?? [];
+
+    questions.push({ question: nextQuestion, keyPoints: nextKeyPoints });
+
+    await db.update(aiInterviewSessionsTable)
+      .set({ questions, currentQuestionIndex: nextIndex, updatedAt: new Date() })
+      .where(eq(aiInterviewSessionsTable.id, sessionId));
+
+    res.json({
+      complete: false,
+      score,
+      feedback,
+      nextQuestion: { questionNumber: nextIndex + 1, total: session.totalQuestions, question: nextQuestion, keyPoints: nextKeyPoints },
+    });
+  }
+});
+
+router.get("/ai/interview/session/:id/report", requireAuth, async (req, res): Promise<void> => {
+  const sessionId = parseInt(req.params.id);
+  const [session] = await db.select().from(aiInterviewSessionsTable)
+    .where(eq(aiInterviewSessionsTable.id, sessionId));
+
+  if (!session) { res.status(404).json({ error: "Session not found" }); return; }
+  if (session.userId !== req.user!.id) { res.status(403).json({ error: "Access denied" }); return; }
+  if (!session.report) { res.status(400).json({ error: "Session not yet complete" }); return; }
+
+  res.json({ session, report: session.report });
 });
 
 export default router;

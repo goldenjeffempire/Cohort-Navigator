@@ -33,6 +33,13 @@ import ChallengeDetail from "@/pages/ChallengeDetail";
 import Workspace from "@/pages/Workspace";
 import CodingProgress from "@/pages/CodingProgress";
 import AdminChallenges from "@/pages/AdminChallenges";
+// Phase 4 — Native AI ecosystem
+import AIHub from "@/pages/ai/AIHub";
+import AITutor from "@/pages/ai/AITutor";
+import AICareer from "@/pages/ai/AICareer";
+import AIInterview from "@/pages/ai/AIInterview";
+import AIAnalytics from "@/pages/ai/AIAnalytics";
+import AdminAI from "@/pages/admin/AdminAI";
 
 const queryClient = new QueryClient();
 
@@ -196,6 +203,14 @@ function ProtectedRoutes() {
             <Route path="/challenges/:id" component={ChallengeDetail} />
             <Route path="/workspace" component={Workspace} />
             <Route path="/coding-progress" component={CodingProgress} />
+
+            {/* Phase 4 — Native AI ecosystem */}
+            <Route path="/ai" component={AIHub} />
+            <Route path="/ai/tutor" component={AITutor} />
+            <Route path="/ai/career" component={AICareer} />
+            <Route path="/ai/interview" component={AIInterview} />
+            <Route path="/ai/analytics" component={AIAnalytics} />
+            <Route path="/admin/ai" component={AdminAI} />
 
             <Route component={NotFound} />
           </Switch>

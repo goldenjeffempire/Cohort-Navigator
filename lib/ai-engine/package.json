@@ -10,7 +10,11 @@
     "./knowledge/embeddings": "./src/knowledge/embeddings.ts",
     "./prompts": "./src/prompts/index.ts",
     "./analysis": "./src/analysis/index.ts",
-    "./evaluation": "./src/evaluation/index.ts"
+    "./evaluation": "./src/evaluation/index.ts",
+    "./learning/adaptive": "./src/learning/adaptive.ts",
+    "./analytics": "./src/analytics/index.ts",
+    "./cache": "./src/cache/index.ts",
+    "./security": "./src/security/index.ts"
   },
   "dependencies": {
     "@workspace/db": "workspace:*",
