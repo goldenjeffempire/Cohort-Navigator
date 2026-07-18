@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, ilike, and } from "drizzle-orm";
-import { z } from "zod/v4";
+import { z } from "zod";
 import {
   db,
   mentorProfilesTable,

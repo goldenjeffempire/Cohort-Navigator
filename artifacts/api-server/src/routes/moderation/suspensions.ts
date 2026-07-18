@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, and, isNull, or, gt } from "drizzle-orm";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { db, userSuspensionsTable, usersTable } from "@workspace/db";
 import { requireAuth, requireRole } from "../../middlewares/auth.js";
 

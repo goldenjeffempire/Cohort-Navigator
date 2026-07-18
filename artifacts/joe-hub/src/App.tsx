@@ -40,6 +40,21 @@ import AICareer from "@/pages/ai/AICareer";
 import AIInterview from "@/pages/ai/AIInterview";
 import AIAnalytics from "@/pages/ai/AIAnalytics";
 import AdminAI from "@/pages/admin/AdminAI";
+// Phase 5 — Community, Collaboration & Mentorship
+import CommunityHub from "@/pages/community/CommunityHub";
+import CommunityPage from "@/pages/community/CommunityPage";
+import DiscussionsList from "@/pages/discussions/DiscussionsList";
+import DiscussionDetail from "@/pages/discussions/DiscussionDetail";
+import CreateDiscussion from "@/pages/discussions/CreateDiscussion";
+import MessagesPage from "@/pages/messages/MessagesPage";
+import MentorDirectory from "@/pages/mentorship/MentorDirectory";
+import MentorProfile from "@/pages/mentorship/MentorProfile";
+import TeamsPage from "@/pages/teams/TeamsPage";
+import TeamWorkspace from "@/pages/teams/TeamWorkspace";
+import EventsPage from "@/pages/events/EventsPage";
+import AdminCommunity from "@/pages/admin/AdminCommunity";
+import AdminModeration from "@/pages/admin/AdminModeration";
+import AdminIntegrations from "@/pages/admin/AdminIntegrations";
 
 const queryClient = new QueryClient();
 
@@ -211,6 +226,22 @@ function ProtectedRoutes() {
             <Route path="/ai/interview" component={AIInterview} />
             <Route path="/ai/analytics" component={AIAnalytics} />
             <Route path="/admin/ai" component={AdminAI} />
+
+            {/* Phase 5 — Community, Collaboration & Mentorship */}
+            <Route path="/community" component={CommunityHub} />
+            <Route path="/community/:id" component={CommunityPage} />
+            <Route path="/discussions/new" component={CreateDiscussion} />
+            <Route path="/discussions/:id" component={DiscussionDetail} />
+            <Route path="/discussions" component={DiscussionsList} />
+            <Route path="/messages" component={MessagesPage} />
+            <Route path="/mentorship/:userId" component={MentorProfile} />
+            <Route path="/mentorship" component={MentorDirectory} />
+            <Route path="/teams/:id" component={TeamWorkspace} />
+            <Route path="/teams" component={TeamsPage} />
+            <Route path="/events" component={EventsPage} />
+            <Route path="/admin/community" component={AdminCommunity} />
+            <Route path="/admin/moderation" component={AdminModeration} />
+            <Route path="/admin/integrations" component={AdminIntegrations} />
 
             <Route component={NotFound} />
           </Switch>

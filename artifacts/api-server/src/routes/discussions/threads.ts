@@ -9,7 +9,7 @@
  */
 import { Router } from "express";
 import { eq, and, desc, ilike, or, sql, count } from "drizzle-orm";
-import { z } from "zod/v4";
+import { z } from "zod";
 import {
   db,
   discussionsTable,

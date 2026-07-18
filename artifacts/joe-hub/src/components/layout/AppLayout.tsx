@@ -9,6 +9,7 @@ import {
   LayoutDashboard, BookOpen, Users, ClipboardList, AlertCircle, 
   Bell, Award, Settings, LogOut, Loader2, Menu, Megaphone,
   Code2, Terminal, BarChart3, Brain, Activity,
+  Globe, MessageSquare, Users2, FolderOpen, Calendar, Shield, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,6 +36,13 @@ function AppSidebar() {
     // Phase 4 — AI
     { label: "AI Hub", href: "/ai", icon: Brain },
     { label: "My Analytics", href: "/ai/analytics", icon: Activity },
+    // Phase 5 — Community & Collaboration
+    { label: "Community", href: "/community", icon: Globe },
+    { label: "Discussions", href: "/discussions", icon: MessageSquare },
+    { label: "Messages", href: "/messages", icon: MessageSquare },
+    { label: "Mentorship", href: "/mentorship", icon: Users2 },
+    { label: "Teams", href: "/teams", icon: FolderOpen },
+    { label: "Events", href: "/events", icon: Calendar },
   ];
 
   if (me?.role === "student") {
@@ -47,6 +55,10 @@ function AppSidebar() {
       { label: "Users", href: "/admin/users", icon: Settings },
       { label: "Manage Challenges", href: "/admin/challenges", icon: Code2 },
       { label: "AI Platform", href: "/admin/ai", icon: Brain },
+      // Phase 5 admin
+      { label: "Community Mgmt", href: "/admin/community", icon: Globe },
+      { label: "Moderation", href: "/admin/moderation", icon: Shield },
+      { label: "Integrations", href: "/admin/integrations", icon: Zap },
     );
   } else if (me?.role === "mentor") {
     navItems.push(
