@@ -265,7 +265,7 @@ export default function AIChat({ context = {}, defaultMode = "tutor" }: AIChatPr
                   <Sparkles className="h-5 w-5 text-primary" />
                   <h3 className="font-display font-semibold text-gray-900">JOE AI Assistant</h3>
                 </div>
-                <p className="text-xs text-gray-500">Self-hosted learning AI for JOE Hub</p>
+                <p className="text-xs text-gray-500">Self-hosted learning AI for JOE Forge</p>
               </div>
 
               {/* Mode picker */}

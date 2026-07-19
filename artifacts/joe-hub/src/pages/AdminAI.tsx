@@ -94,7 +94,7 @@ export default function AdminAI() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-gray-900">AI Admin Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage the JOE Hub AI platform</p>
+          <p className="text-sm text-gray-500 mt-0.5">Manage the JOE Forge AI platform</p>
         </div>
         {status && (
           <div className="flex items-center gap-3">

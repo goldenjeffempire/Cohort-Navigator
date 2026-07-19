@@ -89,7 +89,7 @@ export default function Cohorts() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="c-name">Cohort Name *</Label>
-              <Input id="c-name" placeholder="e.g. JOE Hub Cohort 2026-C" value={form.name} onChange={e => set("name", e.target.value)} />
+              <Input id="c-name" placeholder="e.g. JOE Forge Cohort 2026-C" value={form.name} onChange={e => set("name", e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="c-desc">Description</Label>

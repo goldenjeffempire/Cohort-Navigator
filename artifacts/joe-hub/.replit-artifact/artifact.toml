@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "JOE Hub"
+title = "JOE Forge"
 version = "1.0.0"
 id = "artifacts/joe-hub"
 router = "path"

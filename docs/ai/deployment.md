@@ -2,7 +2,7 @@
 
 ## Modes of Operation
 
-JOE Hub's AI platform supports two operating modes. Both work in development and production.
+JOE Forge's AI platform supports two operating modes. Both work in development and production.
 
 ### Mode 1: Built-in RAG Engine (Default)
 
@@ -39,7 +39,7 @@ Connect a running Ollama instance for full language model capabilities.
                     └──────────────┬───────────────┘
                                    │  HTTP /api/chat
                     ┌──────────────▼───────────────┐
-                    │       JOE Hub API Server      │
+                    │       JOE Forge API Server      │
                     │   AI_MODEL_ENDPOINT=          │
                     │   http://ollama-host:11434    │
                     └──────────────────────────────┘
@@ -62,7 +62,7 @@ ollama serve &
 # 4. Set environment variable
 export AI_MODEL_ENDPOINT=http://localhost:11434
 
-# 5. Register model in JOE Hub admin
+# 5. Register model in JOE Forge admin
 curl -X POST /api/ai/admin/models \
   -H "Content-Type: application/json" \
   -d '{
@@ -105,7 +105,7 @@ curl -X POST /api/ai/admin/models/1/activate
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string (auto-provisioned on Replit) |
 | `SESSION_SECRET` | Yes | — | Session signing key |
 
-> **Note:** No AI API keys are required. JOE Hub's AI platform is fully self-hosted.
+> **Note:** No AI API keys are required. JOE Forge's AI platform is fully self-hosted.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: Phase 4 AI build decisions
-description: Key decisions made while building Phase 4 of JOE Hub — native AI ecosystem (adaptive learning, analytics, caching, security, docs)
+description: Key decisions made while building Phase 4 of JOE Forge — native AI ecosystem (adaptive learning, analytics, caching, security, docs)
 ---
 
 # Phase 4 AI Build Decisions

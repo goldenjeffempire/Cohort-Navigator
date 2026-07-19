@@ -1,6 +1,6 @@
-# JOE Hub — Native AI Platform Documentation
+# JOE Forge — Native AI Platform Documentation
 
-JOE Hub runs a fully **self-hosted AI ecosystem** with zero dependency on external AI services (OpenAI, Anthropic, Google, etc.). Every inference, retrieval, embedding, analysis, and analytics computation runs on JOE Hub's own infrastructure.
+JOE Forge runs a fully **self-hosted AI ecosystem** with zero dependency on external AI services (OpenAI, Anthropic, Google, etc.). Every inference, retrieval, embedding, analysis, and analytics computation runs on JOE Forge's own infrastructure.
 
 ## Documents in this Directory
 
@@ -17,7 +17,7 @@ JOE Hub runs a fully **self-hosted AI ecosystem** with zero dependency on extern
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        JOE Hub AI Platform                      │
+│                        JOE Forge AI Platform                      │
 ├─────────────────────────────────────────────────────────────────┤
 │  Frontend (React)                                               │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
@@ -66,7 +66,7 @@ JOE Hub runs a fully **self-hosted AI ecosystem** with zero dependency on extern
 ## Running Modes
 
 ### Mode 1: Built-in RAG Engine (Default — No Configuration Required)
-JOE Hub ships with a fully functional RAG-based response engine. No model downloads, no GPU, no API keys.
+JOE Forge ships with a fully functional RAG-based response engine. No model downloads, no GPU, no API keys.
 
 - Retrieval: BM25 + cosine similarity over self-hosted hash-trick embeddings
 - Response: Structured template responses grounded in course knowledge base

@@ -2,7 +2,7 @@
 
 ## Threat Model
 
-JOE Hub's AI platform faces four primary threat categories:
+JOE Forge's AI platform faces four primary threat categories:
 
 | Threat | Description | Risk |
 |--------|-------------|------|

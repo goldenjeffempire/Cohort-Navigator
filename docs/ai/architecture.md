@@ -2,7 +2,7 @@
 
 ## Overview
 
-JOE Hub's AI platform is a native, self-hosted system with no dependency on third-party AI APIs. It is composed of six layers:
+JOE Forge's AI platform is a native, self-hosted system with no dependency on third-party AI APIs. It is composed of six layers:
 
 1. **Inference Engine** — routes requests to a local model (Ollama) or the built-in RAG fallback
 2. **Knowledge Base** — RAG pipeline backed by course content, indexed in PostgreSQL

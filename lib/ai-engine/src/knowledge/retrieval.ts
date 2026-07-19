@@ -203,7 +203,7 @@ function generateTutorResponse(query: string, chunks: Array<{ title: string; con
   if (q.includes("help") || q.includes("stuck") || q.includes("don't understand")) {
     return `I'm here to help! Let's work through this together.\n\n**Tell me more:**\n- Which specific concept or problem are you stuck on?\n- What have you tried so far?\n- What part is confusing?\n\nThe more context you give me, the more targeted my help can be. Don't worry — getting stuck is a normal part of learning!`;
   }
-  return `I'm your AI learning assistant for JOE Hub.\n\nI can help you with:\n- **Explaining concepts** from your courses\n- **Debugging code** and finding errors\n- **Answering questions** about programming topics\n- **Practice problems** to test your knowledge\n- **Learning recommendations** based on your progress\n\nWhat would you like to explore today?`;
+  return `I'm your AI learning assistant for JOE Forge.\n\nI can help you with:\n- **Explaining concepts** from your courses\n- **Debugging code** and finding errors\n- **Answering questions** about programming topics\n- **Practice problems** to test your knowledge\n- **Learning recommendations** based on your progress\n\nWhat would you like to explore today?`;
 }
 
 function generateQuizResponse(query: string): string {

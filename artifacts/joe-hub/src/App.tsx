@@ -271,7 +271,7 @@ function ClerkProviderWithRoutes() {
         signUp: {
           start: {
             title: "Start your journey",
-            subtitle: "Join the JOE Hub community",
+            subtitle: "Join the JOE Forge community",
           },
         },
       }}

@@ -210,8 +210,8 @@ router.post(
     try {
       const body =
         integration.provider === "discord"
-          ? { content: "🧪 JOE Hub test notification — integration is connected!" }
-          : { text: "🧪 JOE Hub test notification — integration is connected!" };
+          ? { content: "🧪 JOE Forge test notification — integration is connected!" }
+          : { text: "🧪 JOE Forge test notification — integration is connected!" };
 
       const response = await fetch(webhookUrl, {
         method: "POST",

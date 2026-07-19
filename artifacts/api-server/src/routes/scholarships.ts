@@ -243,8 +243,8 @@ router.patch("/scholarship-applications/:id/advance", requireAuth, requireRole("
         .set({ role: "student", studentId })
         .where(eq(usersTable.id, application.applicantUserId));
 
-      notificationTitle = "🎓 Fully Admitted — Welcome to JOE Hub!";
-      notificationBody = `Congratulations! You have been fully admitted to JOE Hub. Your Student ID is ${studentId}. All courses, projects, and community features are now unlocked.`;
+      notificationTitle = "🎓 Fully Admitted — Welcome to JOE Forge!";
+      notificationBody = `Congratulations! You have been fully admitted to JOE Forge. Your Student ID is ${studentId}. All courses, projects, and community features are now unlocked.`;
       break;
     }
 
@@ -318,9 +318,9 @@ router.patch("/scholarship-applications/:id/review", requireAuth, requireRole("a
     .where(eq(scholarshipApplicationsTable.id, id))
     .returning();
 
-  const title = newStatus === "fully_admitted" ? "🎓 Fully Admitted — Welcome to JOE Hub!" : "Application Update";
+  const title = newStatus === "fully_admitted" ? "🎓 Fully Admitted — Welcome to JOE Forge!" : "Application Update";
   const body = newStatus === "fully_admitted"
-    ? "Congratulations! You have been fully admitted to JOE Hub."
+    ? "Congratulations! You have been fully admitted to JOE Forge."
     : "Thank you for applying. Unfortunately, we cannot offer you admission at this time.";
 
   await db.insert(notificationsTable).values({

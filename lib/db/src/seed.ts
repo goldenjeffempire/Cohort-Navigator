@@ -270,7 +270,7 @@ async function main() {
   const [cohort2026a] = await db
     .insert(cohortsTable)
     .values({
-      name: "JOE Hub Cohort 2026-A",
+      name: "JOE Forge Cohort 2026-A",
       description: "Our current flagship cohort covering web development and cloud engineering tracks.",
       startDate,
       endDate,
@@ -285,7 +285,7 @@ async function main() {
   futureEnd.setMonth(futureEnd.getMonth() + 9);
 
   await db.insert(cohortsTable).values({
-    name: "JOE Hub Cohort 2026-B",
+    name: "JOE Forge Cohort 2026-B",
     description: "Upcoming cohort — applications open now.",
     startDate: futureStart.toISOString().slice(0, 10),
     endDate: futureEnd.toISOString().slice(0, 10),

@@ -1,4 +1,4 @@
-# JOE Hub (Cohort Navigator)
+# JOE Forge (Cohort Navigator)
 
 A cohort-based tech-career training platform: courses/lessons, cohorts, assignments, quizzes, coding challenges with an in-browser workspace, scholarships, announcements/notifications, and an AI assistant, with admin tooling for users, challenges, and scholarships.
 

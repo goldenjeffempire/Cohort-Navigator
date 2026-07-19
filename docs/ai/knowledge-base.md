@@ -2,7 +2,7 @@
 
 ## Overview
 
-JOE Hub's knowledge base stores course content, lessons, challenges, and documentation as searchable vector chunks. The Retrieval-Augmented Generation (RAG) pipeline grounds AI responses in real platform content, reducing hallucination and keeping answers relevant to what students are actually learning.
+JOE Forge's knowledge base stores course content, lessons, challenges, and documentation as searchable vector chunks. The Retrieval-Augmented Generation (RAG) pipeline grounds AI responses in real platform content, reducing hallucination and keeping answers relevant to what students are actually learning.
 
 **Everything runs on-device.** No external embedding APIs, no vector database service, no network calls. Embeddings are computed with a hash-trick algorithm and stored as JSON arrays in PostgreSQL.
 
@@ -45,7 +45,7 @@ Each chunk is SHA-256 hashed. On re-indexing (e.g. after a lesson edit), the has
 
 **File:** `lib/ai-engine/src/knowledge/embeddings.ts`
 
-JOE Hub uses a *signed feature-hashing* approach (also called the "hashing trick") instead of a neural sentence transformer. This eliminates the need to download/host model weights and runs in microseconds.
+JOE Forge uses a *signed feature-hashing* approach (also called the "hashing trick") instead of a neural sentence transformer. This eliminates the need to download/host model weights and runs in microseconds.
 
 ### Algorithm
 

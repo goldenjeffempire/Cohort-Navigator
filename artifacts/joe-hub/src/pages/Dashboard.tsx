@@ -104,7 +104,7 @@ function StudentDashboard() {
         <Card className="shadow-sm border-gray-100 flex flex-col">
           <CardHeader>
             <CardTitle className="font-display">Recent Announcements</CardTitle>
-            <CardDescription>Updates from JOE Hub and mentors</CardDescription>
+            <CardDescription>Updates from JOE Forge and mentors</CardDescription>
           </CardHeader>
           <CardContent className="flex-1">
             {dashboard.recentAnnouncements.length > 0 ? (

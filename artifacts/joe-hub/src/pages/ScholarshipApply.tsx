@@ -102,7 +102,7 @@ export default function ScholarshipApply() {
         <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3">
           <Award className="h-8 w-8" />
         </div>
-        <h1 className="text-3xl font-display font-bold text-gray-900">JOE Hub Scholarship Application</h1>
+        <h1 className="text-3xl font-display font-bold text-gray-900">JOE Forge Scholarship Application</h1>
         <p className="text-gray-500 mt-2 max-w-lg mx-auto">Complete all sections to apply. You can save a draft at any time.</p>
       </div>
 
@@ -142,7 +142,7 @@ export default function ScholarshipApply() {
             {step === 1 && "Tell us about yourself."}
             {step === 2 && "Share your educational background."}
             {step === 3 && "Describe your professional experience."}
-            {step === 4 && "Tell us why you want to join JOE Hub."}
+            {step === 4 && "Tell us why you want to join JOE Forge."}
             {step === 5 && "Review and accept the agreements before submitting."}
           </CardDescription>
         </CardHeader>
@@ -271,7 +271,7 @@ export default function ScholarshipApply() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Motivation Letter" required hint="Why do you want to join JOE Hub? (minimum 200 words)">
+              <Field label="Motivation Letter" required hint="Why do you want to join JOE Forge? (minimum 200 words)">
                 <Textarea rows={8} value={form.motivationLetter} onChange={e => set("motivationLetter", e.target.value)} placeholder="Tell us your story — what drives you, why this scholarship matters, and what you hope to achieve..." />
                 <p className="text-xs text-gray-400 mt-1">{form.motivationLetter.split(/\s+/).filter(Boolean).length} words</p>
               </Field>
@@ -310,14 +310,14 @@ export default function ScholarshipApply() {
             <div className="space-y-6">
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                 <p className="text-sm font-semibold text-amber-800 mb-1">Please read and accept all agreements below before submitting.</p>
-                <p className="text-xs text-amber-700">These are binding commitments required for participation in the JOE Hub scholarship programme.</p>
+                <p className="text-xs text-amber-700">These are binding commitments required for participation in the JOE Forge scholarship programme.</p>
               </div>
 
               {[
-                { id: "code", field: "agreedToCodeOfConduct", label: "Code of Conduct", desc: "I agree to uphold the JOE Hub Code of Conduct, treat all community members with respect, and maintain academic integrity throughout the programme." },
+                { id: "code", field: "agreedToCodeOfConduct", label: "Code of Conduct", desc: "I agree to uphold the JOE Forge Code of Conduct, treat all community members with respect, and maintain academic integrity throughout the programme." },
                 { id: "scholarship", field: "agreedToScholarshipAgreement", label: "Scholarship Agreement", desc: "I understand the scholarship obligations, including attendance requirements, assignment deadlines, and the consequences of non-compliance." },
-                { id: "privacy", field: "agreedToPrivacyPolicy", label: "Privacy Policy", desc: "I consent to JOE Hub collecting and processing my personal data in accordance with the Privacy Policy for the purpose of administering the scholarship." },
-                { id: "terms", field: "agreedToTerms", label: "Terms & Conditions", desc: "I have read and agree to the JOE Hub Terms and Conditions governing use of the platform and participation in the programme." },
+                { id: "privacy", field: "agreedToPrivacyPolicy", label: "Privacy Policy", desc: "I consent to JOE Forge collecting and processing my personal data in accordance with the Privacy Policy for the purpose of administering the scholarship." },
+                { id: "terms", field: "agreedToTerms", label: "Terms & Conditions", desc: "I have read and agree to the JOE Forge Terms and Conditions governing use of the platform and participation in the programme." },
               ].map(a => (
                 <div key={a.id} className={`border rounded-xl p-5 transition-colors ${(form as any)[a.field] ? "border-primary/30 bg-primary/5" : "border-gray-200 bg-white"}`}>
                   <div className="flex items-start gap-4">

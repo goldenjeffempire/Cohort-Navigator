@@ -92,7 +92,7 @@ export default function AIHub() {
           </div>
           <h1 className="text-3xl font-display font-bold mb-2">JOE AI</h1>
           <p className="text-white/80 max-w-xl">
-            A fully self-hosted AI ecosystem powering your entire learning journey — tutor, code assistant, interview coach, and career advisor, all running on JOE Hub's own infrastructure.
+            A fully self-hosted AI ecosystem powering your entire learning journey — tutor, code assistant, interview coach, and career advisor, all running on JOE Forge's own infrastructure.
           </p>
           <div className="flex gap-3 mt-5">
             <Link href="/ai/tutor">
@@ -169,7 +169,7 @@ export default function AIHub() {
         <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
         <div>
           <span className="font-medium text-gray-700">Self-hosted AI Platform: </span>
-          JOE Hub's AI runs on its own infrastructure using a retrieval-augmented generation (RAG) engine backed by the platform's knowledge base.
+          JOE Forge's AI runs on its own infrastructure using a retrieval-augmented generation (RAG) engine backed by the platform's knowledge base.
           For higher-capacity AI, connect a local model server (Ollama/vLLM) via the Admin AI Dashboard and set <code>AI_MODEL_ENDPOINT</code>.
         </div>
       </div>

@@ -1,7 +1,7 @@
 /**
  * Adaptive Learning Engine
  *
- * Drives personalized learning on JOE Hub by maintaining a per-user
+ * Drives personalized learning on JOE Forge by maintaining a per-user
  * competency model, detecting skill gaps, identifying at-risk students,
  * and generating learning recommendations — entirely on-device with no
  * external AI services.

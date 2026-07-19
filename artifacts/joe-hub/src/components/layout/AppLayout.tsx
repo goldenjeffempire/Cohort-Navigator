@@ -74,7 +74,7 @@ function AppSidebar() {
           <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground">
             JH
           </div>
-          <span>JOE Hub</span>
+          <span>JOE Forge</span>
         </Link>
       </SidebarHeader>
       

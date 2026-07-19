@@ -17,7 +17,7 @@ const WORKFLOW_STEPS = [
   { key: "additional_info_requested", label: "Info Requested",           desc: "We need additional information from you." },
   { key: "probation",                 label: "Probation Admission",      desc: "You've been admitted to the 1-week probation programme." },
   { key: "probation_assessment",      label: "Probation Assessment",     desc: "Complete the admission assessment (70% passing score required)." },
-  { key: "fully_admitted",            label: "Fully Admitted",           desc: "Congratulations — you are a full JOE Hub student!" },
+  { key: "fully_admitted",            label: "Fully Admitted",           desc: "Congratulations — you are a full JOE Forge student!" },
 ];
 
 const STATUS_META: Record<string, { color: string; bg: string; border: string; badge: string; icon: any; label: string }> = {
@@ -132,7 +132,7 @@ export default function ScholarshipStatus() {
           {isFullyAdmitted && (
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               <div>
-                <p className="text-green-700 font-semibold mb-1">🎉 Welcome to JOE Hub! Your full access is now active.</p>
+                <p className="text-green-700 font-semibold mb-1">🎉 Welcome to JOE Forge! Your full access is now active.</p>
                 {activeApp.reviewNotes && <p className="text-sm text-gray-600">{activeApp.reviewNotes}</p>}
               </div>
               <Button className="bg-green-600 hover:bg-green-700 whitespace-nowrap" asChild>

@@ -2,7 +2,7 @@
 
 ## Overview
 
-JOE Hub's MLOps system manages the lifecycle of AI models with:
+JOE Forge's MLOps system manages the lifecycle of AI models with:
 - A **model registry** tracking all known model configurations and versions
 - A **continuous evaluation harness** that gates model promotion with deterministic quality checks
 - **Usage metrics** aggregated daily for trend analysis
@@ -121,7 +121,7 @@ Before activating a new model:
 
 ## Dataset Management
 
-JOE Hub's "training dataset" is the knowledge base itself — course content that has been indexed into `ai_knowledge_chunks`. No separate dataset management service is needed.
+JOE Forge's "training dataset" is the knowledge base itself — course content that has been indexed into `ai_knowledge_chunks`. No separate dataset management service is needed.
 
 ### Adding Training Data
 

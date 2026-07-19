@@ -21,7 +21,7 @@ const objectStorageService = new ObjectStorageService();
  * Request a presigned URL for file upload.
  * The client sends JSON metadata (name, size, contentType) — NOT the file.
  * Then uploads the file directly to the returned presigned URL.
- * Requires auth (JOE Hub's Clerk-backed requireAuth) so public callers
+ * Requires auth (JOE Forge's Clerk-backed requireAuth) so public callers
  * cannot mint write-capable URLs — used for discussion/message/team
  * attachments and avatars throughout Phase 5.
  */

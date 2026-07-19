@@ -11,7 +11,7 @@ export default function Home() {
           <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold">
             JH
           </div>
-          <span className="font-display font-bold text-xl tracking-tight text-gray-900">JOE Hub</span>
+          <span className="font-display font-bold text-xl tracking-tight text-gray-900">JOE Forge</span>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost" asChild>
@@ -31,7 +31,7 @@ export default function Home() {
               Your launchpad to a <span className="text-primary">tech career</span>.
             </h1>
             <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl">
-              JOE Hub is a rigorous, cohort-based scholarship training platform designed for driven individuals building their career from scratch. We hold you to a high bar because we believe in your potential.
+              JOE Forge is a rigorous, cohort-based scholarship training platform designed for driven individuals building their career from scratch. We hold you to a high bar because we believe in your potential.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="h-14 px-8 text-base shadow-sm" asChild>
@@ -122,9 +122,9 @@ export default function Home() {
             <div className="w-6 h-6 bg-primary rounded flex items-center justify-center text-primary-foreground text-xs">
               JH
             </div>
-            JOE Hub
+            JOE Forge
           </div>
-          <div>© {new Date().getFullYear()} JOE Hub. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} JOE Forge. All rights reserved.</div>
         </div>
       </footer>
     </div>

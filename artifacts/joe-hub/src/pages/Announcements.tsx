@@ -67,7 +67,7 @@ export default function Announcements() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-display font-bold text-gray-900">Announcements</h1>
-          <p className="text-gray-500 mt-1">Stay updated with the latest from JOE Hub.</p>
+          <p className="text-gray-500 mt-1">Stay updated with the latest from JOE Forge.</p>
         </div>
         {isStaff && (
           <Button onClick={() => setOpen(true)}>New Post</Button>

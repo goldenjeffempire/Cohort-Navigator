@@ -2,7 +2,7 @@
 
 ## Overview
 
-Phase 5 adds a complete social and collaborative layer to the JOE Hub platform:
+Phase 5 adds a complete social and collaborative layer to the JOE Forge platform:
 
 | Feature | Routes | Description |
 |---|---|---|
