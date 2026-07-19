@@ -62,7 +62,7 @@ export async function requireAuth(
       count === 0
         ? ("admin" as const)
         : metadataRole === "mentor" || metadataRole === "admin"
-          ? metadataRole
+          ? (metadataRole as "mentor" | "admin")
           : ("student" as const);
 
     const [created] = await db

@@ -2,7 +2,14 @@ import { pgTable, text, serial, timestamp, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const userRoleEnum = pgEnum("user_role", ["student", "mentor", "admin"]);
+export const userRoleEnum = pgEnum("user_role", [
+  "student",
+  "probation_student",
+  "mentor",
+  "admin",
+  "graduate",
+  "alumni",
+]);
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -12,6 +19,8 @@ export const usersTable = pgTable("users", {
   role: userRoleEnum("role").notNull().default("student"),
   avatarUrl: text("avatar_url"),
   bio: text("bio"),
+  studentId: text("student_id").unique(),
+  probationId: text("probation_id").unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

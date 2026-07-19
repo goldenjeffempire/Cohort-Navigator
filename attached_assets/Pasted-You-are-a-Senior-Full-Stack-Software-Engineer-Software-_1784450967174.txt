@@ -1,0 +1,378 @@
+You are a Senior Full Stack Software Engineer, Software Architect, Product Manager, UI/UX Designer, DevOps Engineer, Database Architect, Security Engineer, and LMS Specialist responsible for designing and implementing JOE Hub, a fully online, cohort-based scholarship training platform for Software Engineering and Artificial Intelligence.
+
+The platform must be production-ready, highly scalable, secure, responsive, and capable of supporting thousands of concurrent users.
+
+---
+
+Student Admission Workflow
+
+Design and implement a complete scholarship admission workflow similar to world-class cohort-based learning platforms.
+
+Step 1 – Account Registration
+
+Students should:
+
+* Register using their email address.
+* Create a secure password.
+* Accept the platform's Terms and Conditions.
+* Verify their email address before proceeding.
+
+Features:
+
+* Email verification
+* Secure authentication
+* Password encryption
+* Password reset
+* Login
+* Session management
+* Multi-factor authentication (optional)
+
+Students must not access the application form until their email has been verified.
+
+---
+
+Step 2 – Scholarship Application
+
+After successful email verification, redirect the student to the Scholarship Application Portal.
+
+The application form should include:
+
+Personal Information
+
+* Full Name
+* Profile Picture
+* Gender
+* Date of Birth
+* Nationality
+* State
+* City
+* Residential Address
+* Phone Number
+* Emergency Contact
+
+Educational Background
+
+* Highest Qualification
+* Institution
+* Course of Study
+* Graduation Year
+* Academic Certificates
+* Transcript (optional)
+
+Professional Information
+
+* Employment Status
+* Technical Experience
+* Programming Experience
+* AI Experience
+* Previous Projects
+* Portfolio
+* GitHub
+* LinkedIn
+* Resume/CV Upload
+
+Scholarship Information
+
+* Why do you want to join JOE Hub?
+* Career Goals
+* Motivation Letter
+* Availability
+* Internet Access
+* Computer Ownership
+* Preferred Learning Track
+
+Agreements
+
+* Code of Conduct
+* Scholarship Agreement
+* Privacy Policy
+* Terms & Conditions
+
+Students can save drafts before final submission.
+
+---
+
+Step 3 – Pending Review
+
+Once submitted:
+
+* Application Status = Pending Review
+* Lock editing of the application.
+* Send a confirmation email.
+* Notify administrators.
+* Display application progress on the student's dashboard.
+
+Student dashboard should show:
+
+* Application submitted
+* Current status
+* Review progress
+* Notifications
+
+---
+
+Step 4 – Application Review (Admin)
+
+Administrators can:
+
+* Review applications
+* Filter applications
+* Score applicants
+* Approve
+* Reject
+* Request additional information
+* Add review comments
+* Assign reviewers
+
+---
+
+Step 5 – Probation Admission
+
+When approved:
+
+Automatically:
+
+* Change status to Probation
+* Generate Probation ID
+* Send Probation Invitation Email
+* Grant access to the Probation Dashboard
+
+Students should receive access to:
+
+* Welcome module
+* Orientation
+* Introductory lessons
+* Reading materials
+* Videos
+* Practice exercises
+* Mini assignments
+* Community guidelines
+
+Probation duration:
+
+1 Week
+
+---
+
+Step 6 – Probation Assessment
+
+At the end of probation:
+
+Automatically unlock the assessment.
+
+Support:
+
+* Online examination
+* Physical examination
+* MCQs
+* Coding challenges
+* Practical tasks
+* Essay questions (optional)
+
+Features:
+
+* Timer
+* Auto submission
+* Anti-cheating measures
+* Automatic grading
+* Hidden test cases
+* Instant scoring
+* Assessment analytics
+
+Passing Score:
+
+70%
+
+---
+
+Step 7 – Admission Decision
+
+If Score ≥ 70%
+
+Automatically:
+
+* Update status to Fully Admitted
+* Generate Student ID
+* Assign Cohort
+* Unlock all courses
+* Unlock projects
+* Unlock assessments
+* Unlock community
+* Unlock mentor access
+* Unlock certificates
+* Send Official Admission Email
+* Send Welcome Guide
+
+Students gain unrestricted access to the learning platform.
+
+---
+
+If Score < 70%
+
+Automatically:
+
+* Update status to Not Admitted
+* Send unsuccessful application email
+* Display score
+* Provide improvement recommendations
+* Explain reapplication requirements
+* Allow future applications based on platform policy
+
+---
+
+Platform Architecture
+
+JOE Hub must be divided into three independent systems, each with separate authentication, dashboards, permissions, APIs, and security controls.
+
+---
+
+1. Student Training Platform
+
+Purpose:
+
+The complete online learning environment.
+
+Features:
+
+* Authentication
+* Student onboarding
+* Scholarship application
+* Probation dashboard
+* Learning dashboard
+* Courses
+* Lessons
+* Resources
+* Coding workspace
+* Assignments
+* Automatic assessments
+* AI learning assistant
+* Projects
+* Quizzes
+* Progress tracking
+* Certificates
+* Community
+* Discord/Slack integration
+* Notifications
+* Student profile
+* Portfolio
+* Career dashboard
+
+---
+
+2. Admin Panel
+
+Purpose:
+
+Complete platform administration.
+
+Features:
+
+* Dashboard
+* Student management
+* Application management
+* Admission management
+* Probation management
+* Cohort management
+* Course management
+* Learning resource management
+* Coding challenge management
+* Assessment management
+* Scholarship management
+* Mentor management
+* Instructor management
+* Community moderation
+* Announcements
+* Reports
+* Analytics
+* Sponsor management
+* Certificate management
+* AI management
+* Platform configuration
+* Audit logs
+* Security management
+
+---
+
+3. Mentorship Panel
+
+Purpose:
+
+Dedicated mentor workspace.
+
+Features:
+
+* Mentor dashboard
+* Assigned students
+* Assigned cohorts
+* Student performance
+* Progress monitoring
+* Assignment review
+* Project review
+* Mentorship scheduling
+* One-on-one sessions
+* Group sessions
+* Meeting calendar
+* Attendance
+* Student feedback
+* Performance evaluation
+* Mentorship reports
+* Messaging
+* Notifications
+* Community participation
+
+---
+
+User Roles
+
+* Super Admin
+* Admin
+* Admissions Officer
+* Scholarship Reviewer
+* Instructor
+* Mentor
+* Student
+* Probation Student
+* Graduate
+* Alumni
+* Sponsor
+* Employer
+
+Each role must have granular Role-Based Access Control (RBAC) with clearly defined permissions.
+
+---
+
+General Platform Requirements
+
+The platform must include:
+
+* Secure authentication
+* Role-based authorization
+* Responsive UI
+* Mobile-friendly web experience
+* Production-ready architecture
+* High availability
+* Cloud deployment
+* Scalable infrastructure
+* Load balancing
+* Database optimization
+* Background job processing
+* Queue management
+* Email service
+* Notification service
+* Audit logging
+* Monitoring
+* Error tracking
+* Automated backups
+* Disaster recovery
+* API documentation
+* Security best practices
+* Accessibility (WCAG)
+* Performance optimization
+
+---
+
+Expected Outcome
+
+The final result should be a world-class, fully online, cohort-based scholarship platform where applicants move seamlessly through registration, verification, scholarship application, review, probation, assessment, admission, learning, mentorship, graduation, and career development.
+
+The architecture should be modular, secure, scalable, maintainable, and production-ready, supporting thousands of concurrent students, mentors, instructors, and administrators while delivering a smooth and professional user experience comparable to leading global online learning platforms.
