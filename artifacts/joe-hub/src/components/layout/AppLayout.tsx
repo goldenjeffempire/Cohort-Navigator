@@ -49,9 +49,20 @@ function AppSidebar() {
     navItems.push(
       { label: "Scholarship", href: "/scholarship/status", icon: Award }
     );
+  } else if (me?.role === "probation_student") {
+    // Probation students: limited nav
+    navItems.splice(0, navItems.length,
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Courses", href: "/courses", icon: BookOpen },
+      { label: "Assignments", href: "/assignments", icon: ClipboardList },
+      { label: "Community", href: "/community", icon: Globe },
+      { label: "Announcements", href: "/announcements", icon: Megaphone },
+      { label: "Notifications", href: "/notifications", icon: Bell },
+    );
   } else if (me?.role === "admin") {
     navItems.push(
       { label: "Applications", href: "/admin/scholarship-applications", icon: Award },
+      { label: "Assessment Qs", href: "/admin/assessment-questions", icon: AlertCircle },
       { label: "Users", href: "/admin/users", icon: Settings },
       { label: "Manage Challenges", href: "/admin/challenges", icon: Code2 },
       { label: "AI Platform", href: "/admin/ai", icon: Brain },

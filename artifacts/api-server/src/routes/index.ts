@@ -10,6 +10,7 @@ import quizzesRouter from "./quizzes";
 import announcementsRouter from "./announcements";
 import notificationsRouter from "./notifications";
 import scholarshipsRouter from "./scholarships";
+import assessmentRouter from "./assessment";
 import dashboardRouter from "./dashboard";
 // Phase 3 — coding workspace & assessment
 import executeRouter from "./execute";
@@ -43,6 +44,7 @@ router.use(quizzesRouter);
 router.use(announcementsRouter);
 router.use(notificationsRouter);
 router.use(scholarshipsRouter);
+router.use(assessmentRouter);
 router.use(dashboardRouter);
 // Phase 3
 router.use(executeRouter);

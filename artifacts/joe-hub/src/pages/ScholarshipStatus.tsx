@@ -97,7 +97,12 @@ export default function ScholarshipStatus() {
         <div className={`px-6 py-4 flex items-center gap-3 border-b ${meta.border}`}>
           <Icon className={`h-6 w-6 ${meta.color}`} />
           <span className={`font-bold text-lg ${meta.color}`}>{meta.label}</span>
-          <span className="ml-auto text-sm text-gray-500">Applied {format(new Date(activeApp.appliedAt), "MMMM d, yyyy")}</span>
+          <div className="ml-auto text-right">
+            {activeApp.applicationId && (
+              <p className="font-mono text-xs font-semibold text-gray-600">{activeApp.applicationId}</p>
+            )}
+            <p className="text-xs text-gray-400">Applied {format(new Date(activeApp.appliedAt), "MMMM d, yyyy")}</p>
+          </div>
         </div>
         <div className="px-6 py-5 bg-white">
           {activeApp.status === "additional_info_requested" && activeApp.reviewNotes && (

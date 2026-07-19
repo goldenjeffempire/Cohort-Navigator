@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, BookOpen, Users, AlertCircle, FileText, CheckCircle, ChevronRight, GraduationCap } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProbationDashboard from "@/pages/ProbationDashboard";
 
 function StudentDashboard() {
   const { data: dashboard, isLoading } = useGetStudentDashboard();
@@ -372,6 +373,7 @@ export default function Dashboard() {
       </div>
 
       {me?.role === "student" && <StudentDashboard />}
+      {me?.role === "probation_student" && <ProbationDashboard name={me.name} />}
       {me?.role === "mentor" && <MentorDashboard />}
       {me?.role === "admin" && <AdminDashboard />}
     </div>

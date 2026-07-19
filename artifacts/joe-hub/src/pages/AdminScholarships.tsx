@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,11 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import { format } from "date-fns";
 import {
   FileText, CheckCircle, XCircle, Search, Eye, ArrowRight,
   BookOpen, GraduationCap, AlertCircle, Star, ExternalLink,
-  Github, Linkedin, Globe, ChevronDown, ChevronUp
+  Github, Linkedin, Globe, ChevronDown, ChevronUp, HelpCircle, X
 } from "lucide-react";
 
 type AppStatus = "pending" | "under_review" | "additional_info_requested" | "probation" | "probation_assessment" | "fully_admitted" | "not_admitted";
@@ -69,10 +70,23 @@ export default function AdminScholarships() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
+  const [search, setSearch] = useState("");
+
   const { data: applications, isLoading } = useQuery({
     queryKey: ["/api/scholarship-applications", filter],
     queryFn: () => customFetch<any[]>(`/api/scholarship-applications?status=${filter}`),
   });
+
+  const filtered = useMemo(() => {
+    if (!applications || !search.trim()) return applications ?? [];
+    const q = search.toLowerCase();
+    return applications.filter((a: any) =>
+      a.fullName?.toLowerCase().includes(q) ||
+      a.email?.toLowerCase().includes(q) ||
+      a.applicationId?.toLowerCase().includes(q) ||
+      a.applicantName?.toLowerCase().includes(q)
+    );
+  }, [applications, search]);
 
   const advanceMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: any }) =>
@@ -114,12 +128,35 @@ export default function AdminScholarships() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-gray-900">Scholarship Applications</h1>
-        <p className="text-gray-500 mt-1">Manage the full 7-step admission workflow.</p>
+      <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-gray-900">Scholarship Applications</h1>
+          <p className="text-gray-500 mt-1">Manage the full 7-step admission workflow.</p>
+        </div>
+        <Button variant="outline" asChild>
+          <Link href="/admin/assessment-questions">
+            <HelpCircle className="h-4 w-4 mr-2" /> Assessment Questions
+          </Link>
+        </Button>
       </div>
 
-      <Tabs value={filter} onValueChange={(v: any) => setFilter(v)} className="w-full mb-6">
+      {/* Search bar */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by name, email, or application ID…"
+          className="pl-10 pr-10 h-11"
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      <Tabs value={filter} onValueChange={(v: any) => { setFilter(v); setSearch(""); }} className="w-full mb-6">
         <TabsList className="bg-gray-100 p-1 rounded-lg flex-wrap h-auto gap-1">
           {STATUS_TABS.map(tab => (
             <TabsTrigger key={tab.value} value={tab.value} className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-1.5 text-sm">
@@ -131,9 +168,9 @@ export default function AdminScholarships() {
 
       {isLoading ? (
         <div className="space-y-4">{[1,2,3].map(i => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}</div>
-      ) : applications && applications.length > 0 ? (
+      ) : filtered.length > 0 ? (
         <div className="grid gap-4">
-          {applications.map(app => (
+          {filtered.map((app: any) => (
             <ApplicationCard
               key={app.id}
               app={app}
@@ -146,8 +183,11 @@ export default function AdminScholarships() {
       ) : (
         <div className="text-center p-16 bg-white rounded-xl border border-dashed border-gray-200">
           <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No {filter.replace(/_/g, " ")} applications</h3>
-          <p className="text-gray-500">The queue is empty for this status.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {search ? `No results for "${search}"` : `No ${filter.replace(/_/g, " ")} applications`}
+          </h3>
+          <p className="text-gray-500">{search ? "Try a different name, email, or application ID." : "The queue is empty for this status."}</p>
+          {search && <Button variant="ghost" className="mt-3" onClick={() => setSearch("")}>Clear search</Button>}
         </div>
       )}
 
@@ -228,9 +268,10 @@ function ApplicationCard({ app, actions, onView, onAction }: { app: any; actions
     <Card className="shadow-sm border-gray-200 overflow-hidden">
       <div className="bg-gray-50/80 px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="font-bold text-lg text-gray-900">{app.fullName}</span>
             <Badge variant="outline" className={`text-xs ${badgeClass}`}>{app.status.replace(/_/g, " ")}</Badge>
+            {app.applicationId && <span className="text-xs font-mono text-gray-400">{app.applicationId}</span>}
           </div>
           <span className="text-sm text-gray-500">{app.email}</span>
         </div>

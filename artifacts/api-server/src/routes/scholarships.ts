@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, or, ilike, sql } from "drizzle-orm";
 import { db, scholarshipApplicationsTable, usersTable, notificationsTable } from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth";
 import { z } from "zod";
@@ -17,6 +17,15 @@ function generateId(prefix: string): string {
   const year = new Date().getFullYear();
   const random = Math.floor(100000 + Math.random() * 900000);
   return `${prefix}-${year}-${random}`;
+}
+
+async function logStatusHistory(applicationId: number, previousStatus: string | null, newStatus: string, changedByUserId: number | null, notes?: string) {
+  try {
+    await db.execute(
+      sql`INSERT INTO scholarship_status_history (application_id, previous_status, new_status, changed_by_user_id, notes)
+          VALUES (${applicationId}, ${previousStatus}, ${newStatus}, ${changedByUserId}, ${notes ?? null})`
+    );
+  } catch { /* non-critical — don't fail the main operation */ }
 }
 
 // ── Zod schemas ────────────────────────────────────────────────────────────
@@ -79,6 +88,7 @@ const ListQueryParams = z.object({
       "not_admitted",
     ])
     .optional(),
+  search: z.string().optional(),
 });
 
 const AdvanceStatusBody = z.object({
@@ -98,16 +108,30 @@ const AdvanceStatusBody = z.object({
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 
-// List all (admin)
+// List all (admin) — supports ?status=&search=
 router.get("/scholarship-applications", requireAuth, requireRole("admin"), async (req, res): Promise<void> => {
   const query = ListQueryParams.safeParse(req.query);
   if (!query.success) { res.status(400).json({ error: query.error.message }); return; }
 
-  const rows = await db
+  const { status, search } = query.data;
+
+  // Build where conditions
+  let rows = await db
     .select()
     .from(scholarshipApplicationsTable)
-    .where(query.data.status ? eq(scholarshipApplicationsTable.status, query.data.status) : undefined)
+    .where(status ? eq(scholarshipApplicationsTable.status, status) : undefined)
     .orderBy(desc(scholarshipApplicationsTable.appliedAt));
+
+  // Client-side search filter (name/email already on application rows)
+  if (search) {
+    const q = search.toLowerCase();
+    rows = rows.filter(r =>
+      r.fullName?.toLowerCase().includes(q) ||
+      r.email?.toLowerCase().includes(q) ||
+      r.applicationId?.toLowerCase().includes(q)
+    );
+  }
+
   res.json(await Promise.all(rows.map(withApplicant)));
 });
 
@@ -132,20 +156,26 @@ router.post("/scholarship-applications", requireAuth, async (req, res): Promise<
   const status = parsed.data.status ?? "pending";
 
   if (existing && existing.status === "draft") {
-    // Update the existing draft
+    // Update the existing draft — generate applicationId when submitting
+    const appId = status === "pending" && !existing.applicationId
+      ? generateId("APP")
+      : existing.applicationId;
     const [updated] = await db
       .update(scholarshipApplicationsTable)
-      .set({ ...parsed.data, status, appliedAt: status === "pending" ? new Date() : existing.appliedAt })
+      .set({ ...parsed.data, status, applicationId: appId, appliedAt: status === "pending" ? new Date() : existing.appliedAt })
       .where(eq(scholarshipApplicationsTable.id, existing.id))
       .returning();
+    if (status === "pending") await logStatusHistory(updated.id, "draft", "pending", req.user!.id);
     res.status(200).json(await withApplicant(updated));
     return;
   }
 
+  const applicationId = generateId("APP");
   const [application] = await db
     .insert(scholarshipApplicationsTable)
-    .values({ ...parsed.data, applicantUserId: req.user!.id, status })
+    .values({ ...parsed.data, applicantUserId: req.user!.id, status, applicationId })
     .returning();
+  if (status === "pending") await logStatusHistory(application.id, null, "pending", req.user!.id);
   res.status(201).json(await withApplicant(application));
 });
 
@@ -264,6 +294,8 @@ router.patch("/scholarship-applications/:id/advance", requireAuth, requireRole("
     .set(updateData)
     .where(eq(scholarshipApplicationsTable.id, id))
     .returning();
+
+  await logStatusHistory(id, application.status, parsed.data.status, req.user!.id, parsed.data.reviewNotes);
 
   if (notificationTitle) {
     await db.insert(notificationsTable).values({

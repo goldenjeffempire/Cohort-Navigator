@@ -1,0 +1,228 @@
+Design and implement a complete, production-ready scholarship admission system for JOE Hub, a fully online, cohort-based Software Engineering and AI training platform.
+
+The admission process should be fully automated, secure, scalable, responsive, and designed to provide a seamless experience from registration to final admission.
+
+Step 1 – Account Registration
+
+Allow prospective students to create an account using:
+
+* Email address
+* Secure password
+* Password confirmation
+
+During registration:
+
+* Validate all inputs.
+* Prevent duplicate accounts.
+* Require acceptance of the Terms & Conditions and Privacy Policy.
+* Send an email verification link immediately after registration.
+
+Students must verify their email address before proceeding. Until verification is complete, they should not have access to the scholarship application form or any learning content.
+
+---
+
+Step 2 – Email Verification
+
+After clicking the verification link:
+
+* Mark the email as verified.
+* Activate the student's account.
+* Automatically redirect the student to the Scholarship Application Portal.
+
+If verification fails or the link expires:
+
+* Allow the student to request a new verification email.
+
+---
+
+Step 3 – Scholarship Application Form
+
+After email verification, require every student to complete a comprehensive scholarship application form before continuing.
+
+The form should include:
+
+Personal Information
+
+* Full name
+* Profile photo
+* Gender
+* Date of birth
+* Nationality
+* State/Province
+* City
+* Residential address
+* Phone number
+* Emergency contact
+
+Educational Information
+
+* Highest qualification
+* Institution attended
+* Course of study
+* Graduation year
+* Academic certificates
+* Transcript (optional)
+
+Technical Background
+
+* Programming experience
+* AI experience
+* Technical skills
+* Previous projects
+* GitHub profile
+* LinkedIn profile
+* Portfolio website
+* Resume/CV upload
+
+Scholarship Questions
+
+* Why do you want to join JOE Hub?
+* Career goals
+* Motivation statement
+* Availability
+* Internet access
+* Computer ownership
+* Preferred learning track
+
+Agreements
+
+* Code of Conduct
+* Scholarship Agreement
+* Privacy Policy
+* Terms & Conditions
+
+Students should be able to save drafts before final submission.
+
+---
+
+Step 4 – Application Submission
+
+When the application is submitted:
+
+Automatically:
+
+* Lock the application from further editing.
+* Change the application status to Pending Review.
+* Generate a unique application ID.
+* Record the submission date and time.
+* Send a confirmation email acknowledging receipt of the application.
+* Notify administrators that a new application has been submitted.
+
+The student's dashboard should clearly display:
+
+* Application ID
+* Submission date
+* Current application status
+* Review progress
+
+---
+
+Step 5 – Application Review
+
+Administrators should be able to:
+
+* Review applications.
+* Filter and search applicants.
+* Score applicants.
+* Approve or reject applications.
+* Request additional information.
+* Leave internal review comments.
+* Track review history.
+
+---
+
+Step 6 – Probation Invitation
+
+If an application is approved:
+
+Automatically:
+
+* Update the student's status to Probation.
+* Generate a Probation ID.
+* Send a Probation Invitation Email.
+* Grant access to the Probation Dashboard.
+
+The probation period should last one week.
+
+During probation, students should only have access to:
+
+* Welcome and orientation modules
+* Introductory learning resources
+* Beginner assignments
+* Practice exercises
+* Community guidelines
+* Limited platform features
+
+They must not have access to the full training platform.
+
+---
+
+Step 7 – Probation Assessment
+
+At the end of the one-week probation period:
+
+Automatically unlock the assessment.
+
+The assessment may be:
+
+* Online
+* Physical (configured by administrators)
+
+The system should support:
+
+* Multiple-choice questions
+* Coding assessments
+* Practical exercises
+* Timed examinations
+* Automatic submission
+* Automatic grading
+* Hidden test cases (for coding assessments)
+* Anti-cheating measures
+* Instant score calculation
+
+The minimum passing score is 70%.
+
+---
+
+Step 8 – Final Admission
+
+If the student scores 70% or above:
+
+Automatically:
+
+* Update account status to Fully Admitted.
+* Generate a Student ID.
+* Assign the student to their cohort.
+* Unlock the complete learning platform.
+* Grant access to all courses, learning resources, coding workspaces, projects, assessments, mentor support, discussions, and community features.
+* Send an Official Admission Email.
+* Send onboarding instructions and a welcome guide.
+
+---
+
+Step 9 – Unsuccessful Applicants
+
+If the student scores below 70%:
+
+Automatically:
+
+* Update account status to Not Admitted.
+* Send a polite notification explaining that they were not successful.
+* Display the final assessment score.
+* Provide constructive feedback where applicable.
+* Explain the reapplication process and eligibility for future cohorts.
+
+---
+
+General Requirements
+
+The entire admission workflow should be:
+
+* Fully automated where appropriate.
+* Secure and production-ready.
+* Role-based and permission-controlled.
+* Scalable for thousands of applicants.
+* Responsive across all devices.
+* Auditable with complete status history and activity logs.
+* Integrated with email notifications at every major stage.
+* Designed to deliver a smooth, transparent, and professional scholarship admission experience from registration through final admission.

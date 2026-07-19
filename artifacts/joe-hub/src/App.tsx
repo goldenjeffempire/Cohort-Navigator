@@ -23,6 +23,8 @@ import Notifications from "@/pages/Notifications";
 import ScholarshipApply from "@/pages/ScholarshipApply";
 import ScholarshipStatus from "@/pages/ScholarshipStatus";
 import AdminScholarships from "@/pages/AdminScholarships";
+import AdminAssessmentQuestions from "@/pages/AdminAssessmentQuestions";
+import ProbationAssessment from "@/pages/ProbationAssessment";
 import AdminUsers from "@/pages/AdminUsers";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/not-found";
@@ -208,8 +210,10 @@ function ProtectedRoutes() {
             
             <Route path="/scholarship/apply" component={ScholarshipApply} />
             <Route path="/scholarship/status" component={ScholarshipStatus} />
-            
+            <Route path="/probation/assessment" component={ProbationAssessment} />
+
             <Route path="/admin/scholarship-applications" component={AdminScholarships} />
+            <Route path="/admin/assessment-questions" component={AdminAssessmentQuestions} />
             <Route path="/admin/users" component={AdminUsers} />
             <Route path="/admin/challenges" component={AdminChallenges} />
 
