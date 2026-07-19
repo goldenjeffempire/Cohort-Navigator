@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@clerk/express": "^2.1.39",
+    "zod": "catalog:",
     "@clerk/shared": "^4.25.2",
     "@google-cloud/storage": "^7.21.0",
     "@workspace/ai-engine": "workspace:*",
